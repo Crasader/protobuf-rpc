@@ -103,7 +103,7 @@ public final class ProtobufRpcServer {
             ProtobufRpcServer protobufRpcServer = new ProtobufRpcServer();
 
             if(mLocalAddress != null) {
-                ServerBootstrap serverBootstrap = serverBootstrap = new ServerBootstrap();
+                ServerBootstrap serverBootstrap = new ServerBootstrap();
                 serverBootstrap.group(acquireServerEventLoopGroup(), acquireClientEventLoopGroup());
                 serverBootstrap.channel(NioServerSocketChannel.class);
                 serverBootstrap.childHandler(new RpcServerChannelInitializer(
@@ -119,7 +119,7 @@ public final class ProtobufRpcServer {
             }
 
             if(mSslLocalAddress != null) {
-                ServerBootstrap sslServerBootstrap = sslServerBootstrap = new ServerBootstrap();
+                ServerBootstrap sslServerBootstrap = new ServerBootstrap();
                 sslServerBootstrap.group(acquireServerEventLoopGroup(), acquireClientEventLoopGroup());
                 sslServerBootstrap.channel(NioServerSocketChannel.class);
                 sslServerBootstrap.childHandler(new RpcServerChannelInitializer(
