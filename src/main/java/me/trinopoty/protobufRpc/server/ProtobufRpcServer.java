@@ -3,12 +3,18 @@ package me.trinopoty.protobufRpc.server;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
+import me.trinopoty.protobufRpc.exception.ServiceConstructorNotFoundException;
+import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -32,7 +38,7 @@ public final class ProtobufRpcServer {
 
         private int mBacklogCount = 5;
         private boolean mKeepAlive = true;
-        private Long mMaxDecoderPacketLength = null;
+        private Integer mMaxDecoderPacketLength = null;
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
 
@@ -71,7 +77,7 @@ public final class ProtobufRpcServer {
             return this;
         }
 
-        public Builder setMaxDecoderPacketLength(long maxDecoderPacketLength) {
+        public Builder setMaxDecoderPacketLength(int maxDecoderPacketLength) {
             mMaxDecoderPacketLength = maxDecoderPacketLength;
             return this;
         }
@@ -87,29 +93,64 @@ public final class ProtobufRpcServer {
         }
 
         public ProtobufRpcServer build() {
-            return null;
+            if((mLocalAddress == null) && (mSslLocalAddress == null)) {
+                throw new IllegalArgumentException("LocalAddress must be provided.");
+            }
+            if(mEnableTrafficLogging && (mLoggingName == null)) {
+                throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
+            }
+
+            ProtobufRpcServer protobufRpcServer = new ProtobufRpcServer();
+
+            if(mLocalAddress != null) {
+                ServerBootstrap serverBootstrap = serverBootstrap = new ServerBootstrap();
+                serverBootstrap.group(acquireServerEventLoopGroup(), acquireClientEventLoopGroup());
+                serverBootstrap.channel(NioServerSocketChannel.class);
+                serverBootstrap.childHandler(new RpcServerChannelInitializer(
+                        protobufRpcServer,
+                        mMaxDecoderPacketLength,
+                        null,
+                        mEnableTrafficLogging,
+                        mLoggingName));
+                serverBootstrap.option(ChannelOption.SO_BACKLOG, mBacklogCount);
+                serverBootstrap.option(ChannelOption.SO_KEEPALIVE, mKeepAlive);
+
+                protobufRpcServer.setServerBootstrap(mLocalAddress, serverBootstrap);
+            }
+
+            if(mSslLocalAddress != null) {
+                ServerBootstrap sslServerBootstrap = sslServerBootstrap = new ServerBootstrap();
+                sslServerBootstrap.group(acquireServerEventLoopGroup(), acquireClientEventLoopGroup());
+                sslServerBootstrap.channel(NioServerSocketChannel.class);
+                sslServerBootstrap.childHandler(new RpcServerChannelInitializer(
+                        protobufRpcServer,
+                        mMaxDecoderPacketLength,
+                        mSslContext,
+                        mEnableTrafficLogging,
+                        mLoggingName));
+                sslServerBootstrap.option(ChannelOption.SO_BACKLOG, mBacklogCount);
+                sslServerBootstrap.option(ChannelOption.SO_KEEPALIVE, mKeepAlive);
+
+                protobufRpcServer.setSslServerBootstrap(mSslLocalAddress, sslServerBootstrap);
+            }
+
+            return protobufRpcServer;
         }
     }
 
-    private final InetSocketAddress mLocalAddress;
-    private final ServerBootstrap mServerBootstrap;
+    private InetSocketAddress mLocalAddress;
+    private ServerBootstrap mServerBootstrap;
     private Channel mServerChannel = null;
 
-    private final InetSocketAddress mSslLocalAddress;
-    private final ServerBootstrap mSslServerBootstrap;
+    private InetSocketAddress mSslLocalAddress;
+    private ServerBootstrap mSslServerBootstrap;
     private Channel mSslServerChannel = null;
+
+    private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
 
     private boolean mServerStarted = false;
 
-    private ProtobufRpcServer(InetSocketAddress localAddress,
-                              ServerBootstrap serverBootstrap,
-                              InetSocketAddress sslLocalAddress,
-                              ServerBootstrap sslServerBootstrap) {
-        mLocalAddress = localAddress;
-        mServerBootstrap = serverBootstrap;
-
-        mSslLocalAddress = sslLocalAddress;
-        mSslServerBootstrap = sslServerBootstrap;
+    private ProtobufRpcServer() {
     }
 
     @SuppressWarnings("Duplicates")
@@ -159,6 +200,20 @@ public final class ProtobufRpcServer {
     }
 
     /**
+     * Add the implementation class of a service interface.
+     * @param classOfService The interface defining the service.
+     * @param implOfService The class implementing the interface of the service.
+     */
+    public synchronized <T> void addServiceImplementation(Class<T> classOfService, Class<? extends T> implOfService) {
+        mRpcServiceCollector.parseServiceInterface(classOfService);
+        RpcServiceCollector.RpcServiceInfo serviceInfo = mRpcServiceCollector.getServiceInfo(classOfService);
+        assert serviceInfo != null;
+
+        serviceInfo.setImplClass(implOfService);
+        serviceInfo.setImplClassConstructor(getServiceImplementationConstructor(implOfService));
+    }
+
+    /**
      * Bind to ports and start this server.
      *
      * @throws IllegalStateException If the server is already running.
@@ -202,5 +257,32 @@ public final class ProtobufRpcServer {
         }
 
         mServerStarted = false;
+    }
+
+    RpcServiceCollector getRpcServiceCollector() {
+        return mRpcServiceCollector;
+    }
+
+    private void setServerBootstrap(InetSocketAddress localAddress, ServerBootstrap serverBootstrap) {
+        mLocalAddress = localAddress;
+        mServerBootstrap = serverBootstrap;
+    }
+
+    private void setSslServerBootstrap(InetSocketAddress localAddress, ServerBootstrap serverBootstrap) {
+        mSslLocalAddress = localAddress;
+        mSslServerBootstrap = serverBootstrap;
+    }
+
+    private Constructor getServiceImplementationConstructor(Class implClass) {
+        try {
+            @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor();
+            if(!constructor.isAccessible()) {
+                throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
+            }
+
+            return constructor;
+        } catch (NoSuchMethodException ex) {
+            throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
+        }
     }
 }

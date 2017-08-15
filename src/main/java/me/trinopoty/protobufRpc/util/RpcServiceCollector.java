@@ -7,6 +7,7 @@ import me.trinopoty.protobufRpc.exception.IllegalMethodSignatureException;
 import me.trinopoty.protobufRpc.exception.MissingRpcIdentifierException;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +44,10 @@ public final class RpcServiceCollector {
 
         private Class mService;
         private int mServiceIdentifier;
-        private Map<Method, RpcMethodInfo> mMethodMap;
+        private Map<Integer, RpcMethodInfo> mMethodMap;
+
+        private Class mImplClass;
+        private Constructor mImplClassConstructor;
 
         public Class getService() {
             return mService;
@@ -53,8 +57,24 @@ public final class RpcServiceCollector {
             return mServiceIdentifier;
         }
 
-        public Map<Method, RpcMethodInfo> getMethodMap() {
+        public Map<Integer, RpcMethodInfo> getMethodMap() {
             return mMethodMap;
+        }
+
+        public Class getImplClass() {
+            return mImplClass;
+        }
+
+        public void setImplClass(Class implClass) {
+            mImplClass = implClass;
+        }
+
+        public Constructor getImplClassConstructor() {
+            return mImplClassConstructor;
+        }
+
+        public void setImplClassConstructor(Constructor implClassConstructor) {
+            mImplClassConstructor = implClassConstructor;
         }
     }
 
@@ -62,7 +82,7 @@ public final class RpcServiceCollector {
     private HashMap<Integer, Class> mServiceIdentifierClassMap = new HashMap<>();
     private HashMap<Class, RpcServiceInfo> mServiceInfoMap = new HashMap<>();
 
-    public RpcServiceInfo getServiceInfo(Class classOfService) {
+    public void parseServiceInterface(Class classOfService) {
         if(!mServiceInfoMap.containsKey(classOfService)) {
             RpcServiceInfo rpcServiceInfo = parseServiceClass(classOfService);
 
@@ -70,8 +90,17 @@ public final class RpcServiceCollector {
             mServiceIdentifierClassMap.put(rpcServiceInfo.getServiceIdentifier(), rpcServiceInfo.getService());
             mServiceInfoMap.put(classOfService, rpcServiceInfo);
         }
+    }
 
+    public RpcServiceInfo getServiceInfo(Class classOfService) {
         return mServiceInfoMap.get(classOfService);
+    }
+
+    public RpcServiceInfo getServiceInfo(int serviceIdentifier) {
+        if(mServiceIdentifierList.contains(serviceIdentifier)) {
+            return mServiceInfoMap.get(mServiceIdentifierClassMap.get(serviceIdentifier));
+        }
+        return null;
     }
 
     private synchronized RpcServiceInfo parseServiceClass(Class classOfService) {
@@ -96,7 +125,7 @@ public final class RpcServiceCollector {
                 throw new DuplicateRpcServiceIdentifierException(String.format("Class<%s> contains duplicate @RpcIdentifier value. Duplicate class: %s", classOfService.getName(), mServiceIdentifierClassMap.get(rpcServiceInfo.mServiceIdentifier).getName()));
             }
 
-            HashMap<Method, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
+            HashMap<Integer, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
             for(Method method : classOfService.getDeclaredMethods()) {
                 RpcMethodInfo rpcMethodInfo = new RpcMethodInfo();
                 rpcMethodInfo.mMethod = method;
@@ -123,7 +152,7 @@ public final class RpcServiceCollector {
                 //noinspection unchecked
                 rpcMethodInfo.mRequestMessageType = (Class<? extends AbstractMessage>) method.getParameterTypes()[0];
 
-                rpcMethodInfoMap.put(method, rpcMethodInfo);
+                rpcMethodInfoMap.put(rpcMethodInfo.mMethodIdentifier, rpcMethodInfo);
             }
 
             rpcServiceInfo.mMethodMap = Collections.unmodifiableMap(rpcMethodInfoMap);
