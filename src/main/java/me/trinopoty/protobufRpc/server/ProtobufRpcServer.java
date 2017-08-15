@@ -12,6 +12,7 @@ import me.trinopoty.protobufRpc.exception.ServiceConstructorNotFoundException;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -275,7 +276,7 @@ public final class ProtobufRpcServer {
     private Constructor getServiceImplementationConstructor(Class implClass) {
         try {
             @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor();
-            if(!constructor.isAccessible()) {
+            if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
                 throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
             }
 
