@@ -13,13 +13,13 @@ import static org.junit.Assert.*;
 
 public final class EchoTest {
 
-    @RpcIdentifier(identifier = 1)
+    @RpcIdentifier(1)
     public interface EchoService {
 
-        @RpcIdentifier(identifier = 1)
+        @RpcIdentifier(1)
         Empty empty(Empty request);
 
-        @RpcIdentifier(identifier = 2)
+        @RpcIdentifier(2)
         EchoOuterClass.Echo echo(EchoOuterClass.Echo request);
     }
 

@@ -9,27 +9,27 @@ import org.junit.Test;
 
 public final class DuplicateIdentifierTest {
 
-    @RpcIdentifier(identifier = 1)
+    @RpcIdentifier(1)
     public interface DuplicateService01 {
 
-        @RpcIdentifier(identifier = 1)
+        @RpcIdentifier(1)
         Empty empty(Empty empty);
     }
 
-    @RpcIdentifier(identifier = 1)
+    @RpcIdentifier(1)
     public interface DuplicateService02 {
 
-        @RpcIdentifier(identifier = 1)
+        @RpcIdentifier(1)
         Empty empty(Empty empty);
     }
 
-    @RpcIdentifier(identifier = 1)
+    @RpcIdentifier(1)
     public interface DuplicateMethod01 {
 
-        @RpcIdentifier(identifier = 1)
+        @RpcIdentifier(1)
         Empty empty(Empty empty);
 
-        @RpcIdentifier(identifier = 1)
+        @RpcIdentifier(1)
         Empty empty2(Empty empty);
     }
 

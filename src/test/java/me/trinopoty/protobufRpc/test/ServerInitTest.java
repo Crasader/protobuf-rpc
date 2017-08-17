@@ -7,10 +7,10 @@ import org.junit.Test;
 
 public final class ServerInitTest {
 
-    @RpcIdentifier(identifier = 1)
+    @RpcIdentifier(1)
     public interface Service01 {
 
-        @RpcIdentifier(identifier = 1)
+        @RpcIdentifier(1)
         Empty method1(Empty request);
     }
 

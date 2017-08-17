@@ -125,7 +125,7 @@ public final class RpcServiceCollector {
                 throw new MissingRpcIdentifierException(String.format("Class<%s> does not contain @RpcIdentifier annotation.", classOfService.getName()));
             }
 
-            rpcServiceInfo.mServiceIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).identifier();
+            rpcServiceInfo.mServiceIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).value();
             if(mServiceIdentifierList.contains(rpcServiceInfo.mServiceIdentifier)) {
                 throw new DuplicateRpcServiceIdentifierException(String.format("Class<%s> contains duplicate @RpcIdentifier value. Duplicate class: %s", classOfService.getName(), mServiceIdentifierClassMap.get(rpcServiceInfo.mServiceIdentifier).getName()));
             }
@@ -142,7 +142,7 @@ public final class RpcServiceCollector {
                     throw new MissingRpcIdentifierException(String.format("Class<%s>.%s does not contain @RpcIdentifier annotation.", classOfService.getName(), method.getName()));
                 }
 
-                rpcMethodInfo.mMethodIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).identifier();
+                rpcMethodInfo.mMethodIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).value();
                 if(methodIdentifierList.contains(rpcMethodInfo.mMethodIdentifier)) {
                     throw new DuplicateRpcMethodIdentifierException(String.format("Class<%s>.%s contains duplicate @RpcIdentifier value.", classOfService.getName(), method.getName()));
                 } else {
