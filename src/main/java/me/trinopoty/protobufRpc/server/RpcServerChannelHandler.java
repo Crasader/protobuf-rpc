@@ -25,9 +25,9 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        WirePacketFormat.WirePacket wirePacket = (WirePacketFormat.WirePacket) msg;
-        if(wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST) {
-            WirePacketFormat.ServiceIdentifier serviceIdentifier = wirePacket.getServiceIdentifier();
+        WirePacketFormat.WirePacket requestWirePacket = (WirePacketFormat.WirePacket) msg;
+        if(requestWirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST) {
+            WirePacketFormat.ServiceIdentifier serviceIdentifier = requestWirePacket.getServiceIdentifier();
 
             Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(serviceIdentifier.getServiceIdentifier());
             if(serviceInfoObjectPair != null) {
@@ -41,7 +41,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                         assert parserMethod != null;
 
                         try {
-                            requestMessage = (AbstractMessage) parserMethod.invoke(null, (Object) wirePacket.getPayload().toByteArray());
+                            requestMessage = (AbstractMessage) parserMethod.invoke(null, (Object) requestWirePacket.getPayload().toByteArray());
                         } catch (IllegalAccessException | InvocationTargetException ignore) {
                         }
 
@@ -54,7 +54,14 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                             }
 
                             if(responseMessage != null) {
-                                ctx.writeAndFlush(responseMessage);
+                                WirePacketFormat.WirePacket.Builder responseWirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();
+                                responseWirePacketBuilder.setMessageIdentifier(requestWirePacket.getMessageIdentifier());
+                                responseWirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE);
+                                responseWirePacketBuilder.setServiceIdentifier(requestWirePacket.getServiceIdentifier());
+                                responseWirePacketBuilder.setPayload(responseMessage.toByteString());
+                                ctx.writeAndFlush(responseWirePacketBuilder.build());
+                            } else {
+                                // TODO: Send error
                             }
                         } else {
                             // TODO: Send + throw error
