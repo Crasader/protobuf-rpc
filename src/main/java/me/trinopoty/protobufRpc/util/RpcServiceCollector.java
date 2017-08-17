@@ -2,6 +2,7 @@ package me.trinopoty.protobufRpc.util;
 
 import com.google.protobuf.AbstractMessage;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
+import me.trinopoty.protobufRpc.exception.DuplicateRpcMethodIdentifierException;
 import me.trinopoty.protobufRpc.exception.DuplicateRpcServiceIdentifierException;
 import me.trinopoty.protobufRpc.exception.IllegalMethodSignatureException;
 import me.trinopoty.protobufRpc.exception.MissingRpcIdentifierException;
@@ -125,11 +126,11 @@ public final class RpcServiceCollector {
             }
 
             rpcServiceInfo.mServiceIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).identifier();
-
             if(mServiceIdentifierList.contains(rpcServiceInfo.mServiceIdentifier)) {
                 throw new DuplicateRpcServiceIdentifierException(String.format("Class<%s> contains duplicate @RpcIdentifier value. Duplicate class: %s", classOfService.getName(), mServiceIdentifierClassMap.get(rpcServiceInfo.mServiceIdentifier).getName()));
             }
 
+            HashSet<Integer> methodIdentifierList = new HashSet<>();
             HashMap<Method, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
             HashMap<Integer, RpcMethodInfo> rpcMethodInfoIdentifierMap = new HashMap<>();
             for(Method method : classOfService.getDeclaredMethods()) {
@@ -142,6 +143,11 @@ public final class RpcServiceCollector {
                 }
 
                 rpcMethodInfo.mMethodIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).identifier();
+                if(methodIdentifierList.contains(rpcMethodInfo.mMethodIdentifier)) {
+                    throw new DuplicateRpcMethodIdentifierException(String.format("Class<%s>.%s contains duplicate @RpcIdentifier value.", classOfService.getName(), method.getName()));
+                } else {
+                    methodIdentifierList.add(rpcMethodInfo.mMethodIdentifier);
+                }
 
                 Class responseType = method.getReturnType();
                 if(!AbstractMessage.class.isAssignableFrom(responseType)) {
