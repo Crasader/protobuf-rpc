@@ -138,6 +138,8 @@ public final class ProtobufRpcServer {
         }
     }
 
+    private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
+
     private InetSocketAddress mLocalAddress;
     private ServerBootstrap mServerBootstrap;
     private Channel mServerChannel = null;
@@ -145,8 +147,6 @@ public final class ProtobufRpcServer {
     private InetSocketAddress mSslLocalAddress;
     private ServerBootstrap mSslServerBootstrap;
     private Channel mSslServerChannel = null;
-
-    private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
 
     private boolean mServerStarted = false;
 

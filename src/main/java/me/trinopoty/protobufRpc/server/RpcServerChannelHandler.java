@@ -34,7 +34,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                 RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getKey();
                 Object implObject = serviceInfoObjectPair.getValue();
                 if(implObject != null) {
-                    RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodMap().get(serviceIdentifier.getMethodIdentifier());
+                    RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
                     if(methodInfo != null) {
                         AbstractMessage requestMessage = null;
                         Method parserMethod = getProtobufParserMethod(methodInfo.getRequestMessageType());

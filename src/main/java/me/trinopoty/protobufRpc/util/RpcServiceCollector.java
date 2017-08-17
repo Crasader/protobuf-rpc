@@ -44,7 +44,8 @@ public final class RpcServiceCollector {
 
         private Class mService;
         private int mServiceIdentifier;
-        private Map<Integer, RpcMethodInfo> mMethodMap;
+        private Map<Method, RpcMethodInfo> mMethodMap;
+        private Map<Integer, RpcMethodInfo> mMethodIdentifierMap;
 
         private Class mImplClass;
         private Constructor mImplClassConstructor;
@@ -57,8 +58,12 @@ public final class RpcServiceCollector {
             return mServiceIdentifier;
         }
 
-        public Map<Integer, RpcMethodInfo> getMethodMap() {
+        public Map<Method, RpcMethodInfo> getMethodMap() {
             return mMethodMap;
+        }
+
+        public Map<Integer, RpcMethodInfo> getMethodIdentifierMap() {
+            return mMethodIdentifierMap;
         }
 
         public Class getImplClass() {
@@ -125,7 +130,8 @@ public final class RpcServiceCollector {
                 throw new DuplicateRpcServiceIdentifierException(String.format("Class<%s> contains duplicate @RpcIdentifier value. Duplicate class: %s", classOfService.getName(), mServiceIdentifierClassMap.get(rpcServiceInfo.mServiceIdentifier).getName()));
             }
 
-            HashMap<Integer, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
+            HashMap<Method, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
+            HashMap<Integer, RpcMethodInfo> rpcMethodInfoIdentifierMap = new HashMap<>();
             for(Method method : classOfService.getDeclaredMethods()) {
                 RpcMethodInfo rpcMethodInfo = new RpcMethodInfo();
                 rpcMethodInfo.mMethod = method;
@@ -152,10 +158,12 @@ public final class RpcServiceCollector {
                 //noinspection unchecked
                 rpcMethodInfo.mRequestMessageType = (Class<? extends AbstractMessage>) method.getParameterTypes()[0];
 
-                rpcMethodInfoMap.put(rpcMethodInfo.mMethodIdentifier, rpcMethodInfo);
+                rpcMethodInfoMap.put(method, rpcMethodInfo);
+                rpcMethodInfoIdentifierMap.put(rpcMethodInfo.mMethodIdentifier, rpcMethodInfo);
             }
 
             rpcServiceInfo.mMethodMap = Collections.unmodifiableMap(rpcMethodInfoMap);
+            rpcServiceInfo.mMethodIdentifierMap = Collections.unmodifiableMap(rpcMethodInfoIdentifierMap);
         } while (false);
 
         return rpcServiceInfo;
