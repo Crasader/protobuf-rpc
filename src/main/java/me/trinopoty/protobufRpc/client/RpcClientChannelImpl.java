@@ -67,6 +67,7 @@ final class RpcClientChannelImpl implements RpcClientChannel {
             return null;
         }
 
+        @SuppressWarnings("JavaReflectionMemberAccess")
         private Method getProtobufParserMethod(Class<? extends AbstractMessage> messageClass) {
             if(PROTOBUF_PARSER.get(messageClass) == null) {
                 try {
@@ -123,6 +124,8 @@ final class RpcClientChannelImpl implements RpcClientChannel {
     @Override
     public void close() {
         mChannel.close().syncUninterruptibly();
+
+        mProxyMap.clear();
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")

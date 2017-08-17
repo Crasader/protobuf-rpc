@@ -106,6 +106,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         return new Pair<>(serviceInfo, mServiceImplementationObjectMap.get(serviceInfo.getImplClass()));
     }
 
+    @SuppressWarnings("JavaReflectionMemberAccess")
     private Method getProtobufParserMethod(Class<? extends AbstractMessage> messageClass) {
         if(PROTOBUF_PARSER.get(messageClass) == null) {
             try {
