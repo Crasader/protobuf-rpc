@@ -11,21 +11,20 @@ final class RpcServerChannelInitializer extends ChannelInitializer<SocketChannel
     private static final int MAX_PACKET_LENGTH = 8 * 1024;
 
     private final ProtobufRpcServer mProtobufRpcServer;
-    private final int mMaxDecoderPacketLength;
+    private final int mMaxReceivePacketLength;
     private final SslContext mSslContext;
     private final boolean mEnableTrafficLogging;
     private final String mLoggingName;
 
     RpcServerChannelInitializer(
             ProtobufRpcServer protobufRpcServer,
-            Integer maxDecoderPacketLength,
+            Integer maxReceivePacketLength,
             SslContext sslContext,
             boolean enableTrafficLogging,
             String loggingName) {
         mProtobufRpcServer = protobufRpcServer;
-        mMaxDecoderPacketLength = (maxDecoderPacketLength != null)? maxDecoderPacketLength : MAX_PACKET_LENGTH;
+        mMaxReceivePacketLength = (maxReceivePacketLength != null)? maxReceivePacketLength : MAX_PACKET_LENGTH;
         mSslContext = sslContext;
-
         mEnableTrafficLogging = enableTrafficLogging;
         mLoggingName = loggingName;
     }
@@ -39,7 +38,7 @@ final class RpcServerChannelInitializer extends ChannelInitializer<SocketChannel
         }
 
         pipeline.addLast("protobuf-codec", new RpcMessageCodec(
-                mMaxDecoderPacketLength,
+                mMaxReceivePacketLength,
                 true,
                 mEnableTrafficLogging,
                 mEnableTrafficLogging,

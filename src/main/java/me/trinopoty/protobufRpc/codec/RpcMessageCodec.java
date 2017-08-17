@@ -14,7 +14,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
     private static final int PACKET_SIGNATURE = 0xad04ef64;
 
-    private final int mMaxPacketLength;
+    private final int mMaxReceivePacketLength;
     private final boolean mDiscardLargerPacket;
 
     private final boolean mEnableEncodeLogging;
@@ -24,8 +24,8 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
     private int mDiscardLength = 0;
 
-    public RpcMessageCodec(int maxPacketLength, boolean discardLargerPacket, boolean enableEncodeLogging, boolean enableDecodeLogging, String loggingName) {
-        mMaxPacketLength = maxPacketLength;
+    public RpcMessageCodec(int maxReceivePacketLength, boolean discardLargerPacket, boolean enableEncodeLogging, boolean enableDecodeLogging, String loggingName) {
+        mMaxReceivePacketLength = maxReceivePacketLength;
         mDiscardLargerPacket = discardLargerPacket;
 
         mEnableEncodeLogging = enableEncodeLogging;
@@ -94,14 +94,14 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                     mLogger.info(String.format("[RpcDecoder:%s] Received message { size: %s }", mLoggingName, payloadLength));
                 }
 
-                if(payloadLength > mMaxPacketLength) {
+                if(payloadLength > mMaxReceivePacketLength) {
                     if(mDiscardLargerPacket) {
                         mDiscardLength += payloadLength;
                         mDiscardLength -= discardBytes(byteBuf, mDiscardLength);
 
                         return null;
                     } else {
-                        throw new TooLongFrameException("frame size (" + payloadLength + ") larger than maximum size (" + mMaxPacketLength + ")");
+                        throw new TooLongFrameException("frame size (" + payloadLength + ") larger than maximum size (" + mMaxReceivePacketLength + ")");
                     }
                 }
 
