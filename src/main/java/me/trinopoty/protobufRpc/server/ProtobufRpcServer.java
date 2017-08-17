@@ -37,7 +37,6 @@ public final class ProtobufRpcServer {
         private SslContext mSslContext = null;
 
         private int mBacklogCount = 5;
-        private boolean mKeepAlive = true;
         private Integer mMaxDecoderPacketLength = null;
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
@@ -69,11 +68,6 @@ public final class ProtobufRpcServer {
 
         public Builder setBacklogCount(int backlogCount) {
             mBacklogCount = backlogCount;
-            return this;
-        }
-
-        public Builder setKeepAlive(boolean keepAlive) {
-            mKeepAlive = keepAlive;
             return this;
         }
 
@@ -113,7 +107,6 @@ public final class ProtobufRpcServer {
                         mEnableTrafficLogging,
                         mLoggingName));
                 serverBootstrap.option(ChannelOption.SO_BACKLOG, mBacklogCount);
-                serverBootstrap.option(ChannelOption.SO_KEEPALIVE, mKeepAlive);
 
                 protobufRpcServer.setServerBootstrap(mLocalAddress, serverBootstrap);
             }
@@ -129,7 +122,6 @@ public final class ProtobufRpcServer {
                         mEnableTrafficLogging,
                         mLoggingName));
                 sslServerBootstrap.option(ChannelOption.SO_BACKLOG, mBacklogCount);
-                sslServerBootstrap.option(ChannelOption.SO_KEEPALIVE, mKeepAlive);
 
                 protobufRpcServer.setSslServerBootstrap(mSslLocalAddress, sslServerBootstrap);
             }
