@@ -40,7 +40,7 @@ final class ProtobufRpcClientChannelPool implements Closeable {
             mClientChannelPool.returnResource(this);
         }
 
-        public void realClose() {
+        void realClose() {
             mRpcClientChannel.close();
         }
     }
