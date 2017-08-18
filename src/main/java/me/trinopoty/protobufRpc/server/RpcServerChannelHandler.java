@@ -3,8 +3,8 @@ package me.trinopoty.protobufRpc.server;
 import com.google.protobuf.AbstractMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import javafx.util.Pair;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
+import me.trinopoty.protobufRpc.util.Pair;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.lang.reflect.Constructor;
