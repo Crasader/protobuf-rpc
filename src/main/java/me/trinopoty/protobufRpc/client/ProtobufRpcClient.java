@@ -1,7 +1,6 @@
 package me.trinopoty.protobufRpc.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -9,7 +8,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -168,7 +166,7 @@ public final class ProtobufRpcClient {
     }
 
     /**
-     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * Connect to a remote server and return a {@link ProtobufRpcClientChannel} instance
      * to communicate with the server.
      *
      * @param host The hostname of the server to connect to.
@@ -176,12 +174,12 @@ public final class ProtobufRpcClient {
      *
      * @return Use the returned instance to communicate with the server.
      */
-    public RpcClientChannel getClientChannel(String host, int port) {
+    public ProtobufRpcClientChannel getClientChannel(String host, int port) {
         return getClientChannel(host, port, false);
     }
 
     /**
-     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * Connect to a remote server and return a {@link ProtobufRpcClientChannel} instance
      * to communicate with the server.
      *
      * @param host The hostname of the server to connect to.
@@ -190,24 +188,24 @@ public final class ProtobufRpcClient {
      *
      * @return Use the returned instance to communicate with the server.
      */
-    public RpcClientChannel getClientChannel(String host, int port, boolean ssl) {
+    public ProtobufRpcClientChannel getClientChannel(String host, int port, boolean ssl) {
         return getClientChannel(new InetSocketAddress(host, port), ssl);
     }
 
     /**
-     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * Connect to a remote server and return a {@link ProtobufRpcClientChannel} instance
      * to communicate with the server.
      *
      * @param remoteAddress The address (host, port) of ther server to connect to.
      *
      * @return Use the returned instance to communicate with the server.
      */
-    public RpcClientChannel getClientChannel(InetSocketAddress remoteAddress) {
+    public ProtobufRpcClientChannel getClientChannel(InetSocketAddress remoteAddress) {
         return getClientChannel(remoteAddress, false);
     }
 
     /**
-     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * Connect to a remote server and return a {@link ProtobufRpcClientChannel} instance
      * to communicate with the server.
      *
      * @param remoteAddress The address (host, port) of ther server to connect to.
@@ -215,7 +213,7 @@ public final class ProtobufRpcClient {
      *
      * @return Use the returned instance to communicate with the server.
      */
-    public RpcClientChannel getClientChannel(InetSocketAddress remoteAddress, boolean ssl) {
+    public ProtobufRpcClientChannel getClientChannel(InetSocketAddress remoteAddress, boolean ssl) {
         ChannelFuture channelFuture = (!ssl)? mBootstrap.connect(remoteAddress) : mSslBootstrap.connect(remoteAddress);
         channelFuture.syncUninterruptibly();
         if(channelFuture.isSuccess()) {
@@ -227,13 +225,13 @@ public final class ProtobufRpcClient {
 
     /**
      * Connect to a remote server and return a {@link ProtobufRpcClientChannelPool} instance.
-     * Acquire {@link RpcClientChannel} objects from the pool to communicate with the server.
+     * Acquire {@link ProtobufRpcClientChannel} objects from the pool to communicate with the server.
      *
      * @param poolConfig The configuration parameters of the connection pool.
      * @param host The hostname of the server to connect to.
      * @param port The port of the server to connect to.
      *
-     * @return Use the returned instance get {@link RpcClientChannel} to communicate with the server.
+     * @return Use the returned instance get {@link ProtobufRpcClientChannel} to communicate with the server.
      */
     public ProtobufRpcClientChannelPool getClientChannelPool(RpcClientChannelPoolConfig poolConfig, String host, int port) {
         return getClientChannelPool(poolConfig, host, port, false);
@@ -241,14 +239,14 @@ public final class ProtobufRpcClient {
 
     /**
      * Connect to a remote server and return a {@link ProtobufRpcClientChannelPool} instance.
-     * Acquire {@link RpcClientChannel} objects from the pool to communicate with the server.
+     * Acquire {@link ProtobufRpcClientChannel} objects from the pool to communicate with the server.
      *
      * @param poolConfig The configuration parameters of the connection pool.
      * @param host The hostname of the server to connect to.
      * @param port The port of the server to connect to.
      * @param ssl Whether to encrypt the connection to the server.
      *
-     * @return Use the returned instance get {@link RpcClientChannel} to communicate with the server.
+     * @return Use the returned instance get {@link ProtobufRpcClientChannel} to communicate with the server.
      */
     public ProtobufRpcClientChannelPool getClientChannelPool(RpcClientChannelPoolConfig poolConfig, String host, int port, boolean ssl) {
         return getClientChannelPool(poolConfig, new InetSocketAddress(host, port), ssl);
@@ -256,12 +254,12 @@ public final class ProtobufRpcClient {
 
     /**
      * Connect to a remote server and return a {@link ProtobufRpcClientChannelPool} instance.
-     * Acquire {@link RpcClientChannel} objects from the pool to communicate with the server.
+     * Acquire {@link ProtobufRpcClientChannel} objects from the pool to communicate with the server.
      *
      * @param poolConfig The configuration parameters of the connection pool.
      * @param remoteAddress The address (host, port) of ther server to connect to.
      *
-     * @return Use the returned instance get {@link RpcClientChannel} to communicate with the server.
+     * @return Use the returned instance get {@link ProtobufRpcClientChannel} to communicate with the server.
      */
     public ProtobufRpcClientChannelPool getClientChannelPool(RpcClientChannelPoolConfig poolConfig, InetSocketAddress remoteAddress) {
         return getClientChannelPool(poolConfig, remoteAddress, false);
@@ -269,13 +267,13 @@ public final class ProtobufRpcClient {
 
     /**
      * Connect to a remote server and return a {@link ProtobufRpcClientChannelPool} instance.
-     * Acquire {@link RpcClientChannel} objects from the pool to communicate with the server.
+     * Acquire {@link ProtobufRpcClientChannel} objects from the pool to communicate with the server.
      *
      * @param poolConfig The configuration parameters of the connection pool.
      * @param remoteAddress The address (host, port) of ther server to connect to.
      * @param ssl Whether to encrypt the connection to the server.
      *
-     * @return Use the returned instance get {@link RpcClientChannel} to communicate with the server.
+     * @return Use the returned instance get {@link ProtobufRpcClientChannel} to communicate with the server.
      */
     public ProtobufRpcClientChannelPool getClientChannelPool(RpcClientChannelPoolConfig poolConfig, InetSocketAddress remoteAddress, boolean ssl) {
         return new ProtobufRpcClientChannelPool(poolConfig, this, remoteAddress, ssl);

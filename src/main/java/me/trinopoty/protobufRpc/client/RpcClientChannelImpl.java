@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-final class RpcClientChannelImpl implements RpcClientChannel {
+final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
 
     private static final long DEFAULT_READ_TIMEOUT = 5 * 1000;
 

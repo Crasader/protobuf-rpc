@@ -10,12 +10,12 @@ import java.net.InetSocketAddress;
 
 final class ProtobufRpcClientChannelPool implements Closeable {
 
-    private static final class RpcClientChannelProxyImpl implements RpcClientChannel {
+    private static final class RpcClientChannelProxyImpl implements ProtobufRpcClientChannel {
 
         private final ProtobufRpcClientChannelPool mClientChannelPool;
-        private final RpcClientChannel mRpcClientChannel;
+        private final ProtobufRpcClientChannel mRpcClientChannel;
 
-        RpcClientChannelProxyImpl(ProtobufRpcClientChannelPool clientChannelPool, RpcClientChannel rpcClientChannel) {
+        RpcClientChannelProxyImpl(ProtobufRpcClientChannelPool clientChannelPool, ProtobufRpcClientChannel rpcClientChannel) {
             mClientChannelPool = clientChannelPool;
             mRpcClientChannel = rpcClientChannel;
         }
@@ -40,7 +40,7 @@ final class ProtobufRpcClientChannelPool implements Closeable {
         }
     }
 
-    private final class ClientChannelFactory implements PooledObjectFactory<RpcClientChannel> {
+    private final class ClientChannelFactory implements PooledObjectFactory<ProtobufRpcClientChannel> {
 
         private final ProtobufRpcClient mProtobufRpcClient;
         private final InetSocketAddress mRemoteAddress;
@@ -53,33 +53,33 @@ final class ProtobufRpcClientChannelPool implements Closeable {
         }
 
         @Override
-        public PooledObject<RpcClientChannel> makeObject() throws Exception {
-            RpcClientChannel rpcClientChannel = new RpcClientChannelProxyImpl(
+        public PooledObject<ProtobufRpcClientChannel> makeObject() throws Exception {
+            ProtobufRpcClientChannel rpcClientChannel = new RpcClientChannelProxyImpl(
                     ProtobufRpcClientChannelPool.this,
                     mProtobufRpcClient.getClientChannel(mRemoteAddress, mSsl));
             return new DefaultPooledObject<>(rpcClientChannel);
         }
 
         @Override
-        public void destroyObject(PooledObject<RpcClientChannel> pooledObject) throws Exception {
+        public void destroyObject(PooledObject<ProtobufRpcClientChannel> pooledObject) throws Exception {
             ((RpcClientChannelProxyImpl) pooledObject.getObject()).realClose();
         }
 
         @Override
-        public boolean validateObject(PooledObject<RpcClientChannel> pooledObject) {
+        public boolean validateObject(PooledObject<ProtobufRpcClientChannel> pooledObject) {
             return pooledObject.getObject().isActive();
         }
 
         @Override
-        public void activateObject(PooledObject<RpcClientChannel> pooledObject) {
+        public void activateObject(PooledObject<ProtobufRpcClientChannel> pooledObject) {
         }
 
         @Override
-        public void passivateObject(PooledObject<RpcClientChannel> pooledObject) {
+        public void passivateObject(PooledObject<ProtobufRpcClientChannel> pooledObject) {
         }
     }
 
-    private GenericObjectPool<RpcClientChannel> mClientChannelPool;
+    private GenericObjectPool<ProtobufRpcClientChannel> mClientChannelPool;
 
     ProtobufRpcClientChannelPool(RpcClientChannelPoolConfig poolConfig, ProtobufRpcClient protobufRpcClient, InetSocketAddress remoteAddress, boolean ssl) {
         mClientChannelPool = new GenericObjectPool<>(new ClientChannelFactory(protobufRpcClient, remoteAddress, ssl), poolConfig);
@@ -91,11 +91,11 @@ final class ProtobufRpcClientChannelPool implements Closeable {
     }
 
     /**
-     * Retrieves an instance of {@link RpcClientChannel} object from the pool.
+     * Retrieves an instance of {@link ProtobufRpcClientChannel} object from the pool.
      *
-     * @return An instance of {@link RpcClientChannel} for communicating with server.
+     * @return An instance of {@link ProtobufRpcClientChannel} for communicating with server.
      */
-    public RpcClientChannel getResource() {
+    public ProtobufRpcClientChannel getResource() {
         try {
             return mClientChannelPool.borrowObject();
         } catch(Exception ex) {
@@ -105,12 +105,12 @@ final class ProtobufRpcClientChannelPool implements Closeable {
     }
 
     /**
-     * Returns a broken {@link RpcClientChannel} instance to the pool.
+     * Returns a broken {@link ProtobufRpcClientChannel} instance to the pool.
      * The resource is closed on return.
      *
      * @param clientChannel The instance to return.
      */
-    public void returnBrokenResource(RpcClientChannel clientChannel) {
+    public void returnBrokenResource(ProtobufRpcClientChannel clientChannel) {
         try {
             mClientChannelPool.invalidateObject(clientChannel);
         } catch(Exception ignore) {
@@ -118,11 +118,11 @@ final class ProtobufRpcClientChannelPool implements Closeable {
     }
 
     /**
-     * Returns a {@link RpcClientChannel} instance to the pool.
+     * Returns a {@link ProtobufRpcClientChannel} instance to the pool.
      *
      * @param clientChannel The instance to return.
      */
-    public void returnResource(RpcClientChannel clientChannel) {
+    public void returnResource(ProtobufRpcClientChannel clientChannel) {
         if(clientChannel.isActive()) {
             mClientChannelPool.returnObject(clientChannel);
         } else {

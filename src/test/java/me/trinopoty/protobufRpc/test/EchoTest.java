@@ -3,7 +3,7 @@ package me.trinopoty.protobufRpc.test;
 import com.google.protobuf.Empty;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
-import me.trinopoty.protobufRpc.client.RpcClientChannel;
+import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.AfterClass;
@@ -59,7 +59,7 @@ public final class EchoTest {
     @Test
     public void emptyTest() {
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).build();
-        RpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
         EchoService echoService = clientChannel.getService(EchoService.class);
 
         assertNotNull(echoService.empty(Empty.getDefaultInstance()));
@@ -71,7 +71,7 @@ public final class EchoTest {
     @Test
     public void echoTest() {
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).build();
-        RpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
         EchoService echoService = clientChannel.getService(EchoService.class);
 
         EchoOuterClass.Echo echo = echoService.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello World").build());

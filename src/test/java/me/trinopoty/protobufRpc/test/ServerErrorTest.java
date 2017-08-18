@@ -2,7 +2,7 @@ package me.trinopoty.protobufRpc.test;
 
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
-import me.trinopoty.protobufRpc.client.RpcClientChannel;
+import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
 import me.trinopoty.protobufRpc.exception.RpcCallServerException;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
@@ -41,7 +41,7 @@ public final class ServerErrorTest {
         server.startServer();
 
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).build();
-        RpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
 
         EchoService02 echoService02 = clientChannel.getService(EchoService02.class);
         echoService02.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello").build());
