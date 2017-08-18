@@ -110,7 +110,7 @@ final class RpcClientChannelImpl implements RpcClientChannel {
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     void receivedRpcPacket(WirePacketFormat.WirePacket wirePacket) {
-        if(wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) {
+        if((wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) || (wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR)) {
             Thread thread = mWaitingRequestThreads.get(wirePacket.getMessageIdentifier());
             if(thread != null) {
                 mRequestResponseMap.put(wirePacket.getMessageIdentifier(), wirePacket);
