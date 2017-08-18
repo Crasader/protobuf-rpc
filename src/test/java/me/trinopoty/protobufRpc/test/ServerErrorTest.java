@@ -40,7 +40,7 @@ public final class ServerErrorTest {
         server.addServiceImplementation(EchoService01.class, EchoService01Impl.class);
         server.startServer();
 
-        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).build();
+        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService02.class).build();
         ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
 
         EchoService02 echoService02 = clientChannel.getService(EchoService02.class);

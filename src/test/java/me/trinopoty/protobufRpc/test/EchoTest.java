@@ -58,8 +58,8 @@ public final class EchoTest {
     }
 
     @Test
-    public void emptyTest() {
-        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).build();
+    public void emptyTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
         ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
         EchoService echoService = clientChannel.getService(EchoService.class);
 
@@ -70,8 +70,8 @@ public final class EchoTest {
     }
 
     @Test
-    public void echoTest() {
-        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).build();
+    public void echoTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
         ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
         EchoService echoService = clientChannel.getService(EchoService.class);
 
