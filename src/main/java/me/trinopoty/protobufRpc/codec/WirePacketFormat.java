@@ -1404,6 +1404,509 @@ public final class WirePacketFormat {
 
   }
 
+  public interface ErrorMessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:me.trinopoty.protobufRpc.codec.ErrorMessage)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string message = 1;</code>
+     */
+    java.lang.String getMessage();
+    /**
+     * <code>string message = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+  }
+  /**
+   * Protobuf type {@code me.trinopoty.protobufRpc.codec.ErrorMessage}
+   */
+  public  static final class ErrorMessage extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:me.trinopoty.protobufRpc.codec.ErrorMessage)
+      ErrorMessageOrBuilder {
+    // Use ErrorMessage.newBuilder() to construct.
+    private ErrorMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ErrorMessage() {
+      message_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private ErrorMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              message_ = s;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return me.trinopoty.protobufRpc.codec.WirePacketFormat.internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return me.trinopoty.protobufRpc.codec.WirePacketFormat.internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.class, me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.Builder.class);
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 1;
+    private volatile java.lang.Object message_;
+    /**
+     * <code>string message = 1;</code>
+     */
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string message = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, message_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, message_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage)) {
+        return super.equals(obj);
+      }
+      me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage other = (me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage) obj;
+
+      boolean result = true;
+      result = result && getMessage()
+          .equals(other.getMessage());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code me.trinopoty.protobufRpc.codec.ErrorMessage}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:me.trinopoty.protobufRpc.codec.ErrorMessage)
+        me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessageOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return me.trinopoty.protobufRpc.codec.WirePacketFormat.internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return me.trinopoty.protobufRpc.codec.WirePacketFormat.internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.class, me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.Builder.class);
+      }
+
+      // Construct using me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        message_ = "";
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return me.trinopoty.protobufRpc.codec.WirePacketFormat.internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor;
+      }
+
+      public me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage getDefaultInstanceForType() {
+        return me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.getDefaultInstance();
+      }
+
+      public me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage build() {
+        me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage buildPartial() {
+        me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage result = new me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage(this);
+        result.message_ = message_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage) {
+          return mergeFrom((me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage other) {
+        if (other == me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.getDefaultInstance()) return this;
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private java.lang.Object message_ = "";
+      /**
+       * <code>string message = 1;</code>
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       */
+      public Builder setMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:me.trinopoty.protobufRpc.codec.ErrorMessage)
+    }
+
+    // @@protoc_insertion_point(class_scope:me.trinopoty.protobufRpc.codec.ErrorMessage)
+    private static final me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage();
+    }
+
+    public static me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ErrorMessage>
+        PARSER = new com.google.protobuf.AbstractParser<ErrorMessage>() {
+      public ErrorMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ErrorMessage(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ErrorMessage> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ErrorMessage> getParserForType() {
+      return PARSER;
+    }
+
+    public me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_me_trinopoty_protobufRpc_codec_ServiceIdentifier_descriptor;
   private static final 
@@ -1414,6 +1917,11 @@ public final class WirePacketFormat {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_me_trinopoty_protobufRpc_codec_WirePacket_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1431,11 +1939,12 @@ public final class WirePacketFormat {
       "\013messageType\030\002 \001(\0162+.me.trinopoty.protob" +
       "ufRpc.codec.MessageType\022L\n\021serviceIdenti" +
       "fier\030\013 \001(\01321.me.trinopoty.protobufRpc.co" +
-      "dec.ServiceIdentifier\022\017\n\007payload\030\020 \001(\014*q" +
-      "\n\013MessageType\022\025\n\021MESSAGE_TYPE_NONE\020\000\022\030\n\024",
-      "MESSAGE_TYPE_REQUEST\020\001\022\031\n\025MESSAGE_TYPE_R" +
-      "ESPONSE\020\002\022\026\n\022MESSAGE_TYPE_ERROR\020\003B\022B\020Wir" +
-      "ePacketFormatb\006proto3"
+      "dec.ServiceIdentifier\022\017\n\007payload\030\020 \001(\014\"\037" +
+      "\n\014ErrorMessage\022\017\n\007message\030\001 \001(\t*q\n\013Messa",
+      "geType\022\025\n\021MESSAGE_TYPE_NONE\020\000\022\030\n\024MESSAGE" +
+      "_TYPE_REQUEST\020\001\022\031\n\025MESSAGE_TYPE_RESPONSE" +
+      "\020\002\022\026\n\022MESSAGE_TYPE_ERROR\020\003B\022B\020WirePacket" +
+      "Formatb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1461,6 +1970,12 @@ public final class WirePacketFormat {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_me_trinopoty_protobufRpc_codec_WirePacket_descriptor,
         new java.lang.String[] { "MessageIdentifier", "MessageType", "ServiceIdentifier", "Payload", });
+    internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor,
+        new java.lang.String[] { "Message", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -3,6 +3,8 @@ package me.trinopoty.protobufRpc.client;
 import com.google.protobuf.AbstractMessage;
 import io.netty.channel.Channel;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
+import me.trinopoty.protobufRpc.exception.RpcCallException;
+import me.trinopoty.protobufRpc.exception.RpcCallServerException;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.lang.reflect.InvocationHandler;
@@ -29,37 +31,33 @@ final class RpcClientChannelImpl implements RpcClientChannel {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             RpcServiceCollector.RpcMethodInfo methodInfo = mRpcServiceInfo.getMethodMap().get(method);
-            if(methodInfo != null) {
-                WirePacketFormat.ServiceIdentifier serviceIdentifier = WirePacketFormat.ServiceIdentifier.newBuilder()
-                        .setServiceIdentifier(mRpcServiceInfo.getServiceIdentifier())
-                        .setMethodIdentifier(methodInfo.getMethodIdentifier())
-                        .build();
-                WirePacketFormat.WirePacket.Builder wirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();
-                wirePacketBuilder.setMessageIdentifier(mMessageIdentifierGenerator.incrementAndGet());
-                wirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST);
-                wirePacketBuilder.setServiceIdentifier(serviceIdentifier);
+            assert methodInfo != null;
 
-                AbstractMessage requestMessage = (AbstractMessage) args[0];
-                wirePacketBuilder.setPayload(requestMessage.toByteString());
+            WirePacketFormat.ServiceIdentifier serviceIdentifier = WirePacketFormat.ServiceIdentifier.newBuilder()
+                    .setServiceIdentifier(mRpcServiceInfo.getServiceIdentifier())
+                    .setMethodIdentifier(methodInfo.getMethodIdentifier())
+                    .build();
+            WirePacketFormat.WirePacket.Builder requestWirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();
+            requestWirePacketBuilder.setMessageIdentifier(mMessageIdentifierGenerator.incrementAndGet());
+            requestWirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST);
+            requestWirePacketBuilder.setServiceIdentifier(serviceIdentifier);
 
-                WirePacketFormat.WirePacket responsePacket = callRpcAndWaitForResponse(wirePacketBuilder.build());
+            AbstractMessage requestMessage = (AbstractMessage) args[0];
+            requestWirePacketBuilder.setPayload(requestMessage.toByteString());
 
-                AbstractMessage responseMessage = null;
+            WirePacketFormat.WirePacket responseWirePacketPacket = callRpcAndWaitForResponse(requestWirePacketBuilder.build());
+            if(responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) {
                 try {
-                    responseMessage = (AbstractMessage) methodInfo.getResponseMessageParser().invoke(null, (Object) responsePacket.getPayload().toByteArray());
-                } catch (IllegalAccessException | InvocationTargetException ignore) {
+                    return methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    throw new RpcCallException("Unable to parse response message.", ex);
                 }
-
-                if(responseMessage != null) {
-                    return responseMessage;
-                } else {
-                    // TODO: Throw error
-                }
+            } else if(responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR) {
+                WirePacketFormat.ErrorMessage errorMessage = WirePacketFormat.ErrorMessage.parseFrom(responseWirePacketPacket.getPayload());
+                throw new RpcCallServerException(errorMessage.getMessage());
             } else {
-                // TODO: Throw error
+                throw new RpcCallException("Invalid response received: " + responseWirePacketPacket.toString());
             }
-
-            return null;
         }
     }
 
