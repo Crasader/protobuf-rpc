@@ -1,6 +1,6 @@
 package me.trinopoty.protobufRpc.exception;
 
-public final class ServiceConstructorNotFoundException extends RuntimeException {
+public final class ServiceConstructorNotFoundException extends Exception {
 
     public ServiceConstructorNotFoundException() {
         super();

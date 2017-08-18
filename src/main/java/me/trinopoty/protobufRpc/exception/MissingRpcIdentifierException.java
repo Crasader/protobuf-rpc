@@ -1,6 +1,6 @@
 package me.trinopoty.protobufRpc.exception;
 
-public final class MissingRpcIdentifierException extends RuntimeException {
+public final class MissingRpcIdentifierException extends Exception {
 
     public MissingRpcIdentifierException() {
         super();

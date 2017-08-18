@@ -3,7 +3,7 @@ package me.trinopoty.protobufRpc.test;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
-import me.trinopoty.protobufRpc.exception.RpcCallServerException;
+import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public final class ServerErrorTest {
     }
 
     @Test(expected = RpcCallServerException.class)
-    public void serverTest01() {
+    public void serverTest01() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
         ProtobufRpcServer server = builder.build();

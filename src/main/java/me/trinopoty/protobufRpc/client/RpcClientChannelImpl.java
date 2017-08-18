@@ -86,7 +86,6 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
     @Override
     public <T> T getService(Class<T> classOfService) {
         if(!mProxyMap.containsKey(classOfService)) {
-            mProtobufRpcClient.getRpcServiceCollector().parseServiceInterface(classOfService);
             RpcServiceCollector.RpcServiceInfo serviceInfo = mProtobufRpcClient.getRpcServiceCollector().getServiceInfo(classOfService);
             if(serviceInfo != null) {
                 mProxyMap.put(classOfService, Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { classOfService }, new RpcInvocationHandler(classOfService)));

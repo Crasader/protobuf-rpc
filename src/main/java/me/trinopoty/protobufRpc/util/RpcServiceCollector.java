@@ -100,7 +100,7 @@ public final class RpcServiceCollector {
     private HashMap<Integer, Class> mServiceIdentifierClassMap = new HashMap<>();
     private HashMap<Class, RpcServiceInfo> mServiceInfoMap = new HashMap<>();
 
-    public void parseServiceInterface(Class classOfService) {
+    public void parseServiceInterface(Class classOfService) throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         if(!mServiceInfoMap.containsKey(classOfService)) {
             RpcServiceInfo rpcServiceInfo = parseServiceClass(classOfService);
 
@@ -121,7 +121,7 @@ public final class RpcServiceCollector {
         return null;
     }
 
-    private synchronized RpcServiceInfo parseServiceClass(Class classOfService) {
+    private synchronized RpcServiceInfo parseServiceClass(Class classOfService) throws MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
         RpcServiceInfo rpcServiceInfo = new RpcServiceInfo();
 
         do {

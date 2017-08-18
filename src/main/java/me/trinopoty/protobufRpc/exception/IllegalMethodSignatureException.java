@@ -1,6 +1,6 @@
 package me.trinopoty.protobufRpc.exception;
 
-public final class IllegalMethodSignatureException extends RuntimeException {
+public final class IllegalMethodSignatureException extends Exception {
 
     public IllegalMethodSignatureException() {
         super();

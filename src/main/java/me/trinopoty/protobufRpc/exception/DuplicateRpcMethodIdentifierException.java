@@ -1,6 +1,6 @@
 package me.trinopoty.protobufRpc.exception;
 
-public final class DuplicateRpcMethodIdentifierException extends RuntimeException {
+public final class DuplicateRpcMethodIdentifierException extends Exception {
 
     public DuplicateRpcMethodIdentifierException() {
         super();

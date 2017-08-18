@@ -2,8 +2,7 @@ package me.trinopoty.protobufRpc.test;
 
 import com.google.protobuf.Empty;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
-import me.trinopoty.protobufRpc.exception.DuplicateRpcMethodIdentifierException;
-import me.trinopoty.protobufRpc.exception.DuplicateRpcServiceIdentifierException;
+import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
 import org.junit.Test;
 
@@ -63,7 +62,7 @@ public final class DuplicateIdentifierTest {
     }
 
     @Test(expected = DuplicateRpcServiceIdentifierException.class)
-    public void duplicateServiceIdentifierTest() {
+    public void duplicateServiceIdentifierTest() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
         ProtobufRpcServer server = builder.build();
@@ -73,7 +72,7 @@ public final class DuplicateIdentifierTest {
     }
 
     @Test(expected = DuplicateRpcMethodIdentifierException.class)
-    public void duplicateMethodIdentifierTest() {
+    public void duplicateMethodIdentifierTest() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
         ProtobufRpcServer server = builder.build();

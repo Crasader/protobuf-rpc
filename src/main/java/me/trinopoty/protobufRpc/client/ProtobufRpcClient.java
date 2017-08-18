@@ -6,9 +6,14 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
+import me.trinopoty.protobufRpc.exception.DuplicateRpcMethodIdentifierException;
+import me.trinopoty.protobufRpc.exception.DuplicateRpcServiceIdentifierException;
+import me.trinopoty.protobufRpc.exception.IllegalMethodSignatureException;
+import me.trinopoty.protobufRpc.exception.MissingRpcIdentifierException;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,6 +38,8 @@ public final class ProtobufRpcClient {
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
         private SslContext mSslContext = null;
+
+        private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
 
         public Builder() {
         }
@@ -93,6 +100,24 @@ public final class ProtobufRpcClient {
         }
 
         /**
+         * Register service interfaces.
+         *
+         * @param serviceClass List of service interfaces.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
+         *
+         * @throws DuplicateRpcServiceIdentifierException If two interfaces have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws DuplicateRpcMethodIdentifierException If two methods in the same interface have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws MissingRpcIdentifierException If {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} is missing form an interface or method
+         * @throws IllegalMethodSignatureException If the signature, parameter and return type, of a method is wrong
+         */
+        public Builder registerService(Class... serviceClass) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
+            for(Class aServiceClass : serviceClass) {
+                mRpcServiceCollector.parseServiceInterface(aServiceClass);
+            }
+            return this;
+        }
+
+        /**
          * Build an instance of {@link ProtobufRpcClient} with the provided configuration.
          *
          * @return Instance of {@link ProtobufRpcClient} if successful.
@@ -103,7 +128,7 @@ public final class ProtobufRpcClient {
                 throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
             }
 
-            ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mDefaultReceiveTimeoutMillis);
+            ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mRpcServiceCollector, mDefaultReceiveTimeoutMillis);
 
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(acquireClientEventLoopGroup());
@@ -131,14 +156,14 @@ public final class ProtobufRpcClient {
         }
     }
 
+    private final RpcServiceCollector mRpcServiceCollector;
     private final Long mDefaultReceiveTimeoutMillis;
-
-    private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
 
     private Bootstrap mBootstrap;
     private Bootstrap mSslBootstrap;
 
-    private ProtobufRpcClient(Long defaultReceiveTimeoutMillis) {
+    private ProtobufRpcClient(RpcServiceCollector rpcServiceCollector, Long defaultReceiveTimeoutMillis) {
+        mRpcServiceCollector = rpcServiceCollector;
         mDefaultReceiveTimeoutMillis = defaultReceiveTimeoutMillis;
     }
 
