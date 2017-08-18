@@ -12,6 +12,17 @@ public interface ProtobufRpcClientChannel extends AutoCloseable {
     <T> T getService(Class<T> classOfService);
 
     /**
+     * Add a OOB message handler.
+     *
+     * @param classOfOob The class of the OOB interface.
+     * @param objectOfOob The instance of the OOB instance.
+     * @param <T>
+     *
+     * @throws IllegalArgumentException If provided OOB interface class is not registered.
+     */
+    <T> void addOobHandler(Class<T> classOfOob, T objectOfOob);
+
+    /**
      * Retrieves boolean value indicating if the connection is active.
      *
      * @return boolean value indicating whether the connection is active.

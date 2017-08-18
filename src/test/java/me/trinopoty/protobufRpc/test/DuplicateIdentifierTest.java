@@ -4,6 +4,7 @@ import com.google.protobuf.Empty;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
+import me.trinopoty.protobufRpc.server.RpcServerChannel;
 import org.junit.Test;
 
 public final class DuplicateIdentifierTest {
@@ -42,6 +43,9 @@ public final class DuplicateIdentifierTest {
 
     public static class DuplicateService02Impl implements DuplicateService02 {
 
+        public DuplicateService02Impl(RpcServerChannel serverChannel) {
+        }
+
         @Override
         public Empty empty(Empty empty) {
             return null;
@@ -49,6 +53,9 @@ public final class DuplicateIdentifierTest {
     }
 
     public static class DuplicateMethod01Impl implements DuplicateMethod01 {
+
+        public DuplicateMethod01Impl(RpcServerChannel serverChannel) {
+        }
 
         @Override
         public Empty empty(Empty empty) {

@@ -26,7 +26,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         if(requestWirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST) {
             WirePacketFormat.ServiceIdentifier serviceIdentifier = requestWirePacket.getServiceIdentifier();
 
-            Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(serviceIdentifier.getServiceIdentifier());
+            Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(ctx, serviceIdentifier.getServiceIdentifier());
             if(serviceInfoObjectPair != null) {
                 RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getKey();
                 RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
@@ -102,7 +102,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         ctx.writeAndFlush(builder.build());
     }
 
-    private synchronized Pair<RpcServiceCollector.RpcServiceInfo, Object> getServiceImplementationObject(int serviceIdentifier) {
+    private synchronized Pair<RpcServiceCollector.RpcServiceInfo, Object> getServiceImplementationObject(ChannelHandlerContext context, int serviceIdentifier) {
         RpcServiceCollector.RpcServiceInfo serviceInfo = mProtobufRpcServer.getRpcServiceCollector().getServiceInfo(serviceIdentifier);
         if(serviceInfo == null) {
             return null;
@@ -116,8 +116,10 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
             Constructor implConstructor = serviceInfo.getImplClassConstructor();
             assert implConstructor != null;
 
+            RpcServerChannel rpcServerChannel = new RpcServerChannel(mProtobufRpcServer, context.channel());
+
             try {
-                Object implObject = implConstructor.newInstance();
+                Object implObject = implConstructor.newInstance(rpcServerChannel);
                 mServiceImplementationObjectMap.put(serviceInfo.getImplClass(), implObject);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignore) {
             }

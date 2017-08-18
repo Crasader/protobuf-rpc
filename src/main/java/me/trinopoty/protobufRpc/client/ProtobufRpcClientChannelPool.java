@@ -26,6 +26,11 @@ final class ProtobufRpcClientChannelPool implements Closeable {
         }
 
         @Override
+        public <T> void addOobHandler(Class<T> classOfOob, T objectOfOob) {
+            mRpcClientChannel.addOobHandler(classOfOob, objectOfOob);
+        }
+
+        @Override
         public boolean isActive() {
             return mRpcClientChannel.isActive();
         }

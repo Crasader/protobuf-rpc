@@ -13,7 +13,6 @@ import me.trinopoty.protobufRpc.exception.MissingRpcIdentifierException;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -112,7 +111,25 @@ public final class ProtobufRpcClient {
          */
         public Builder registerService(Class... serviceClass) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
             for(Class aServiceClass : serviceClass) {
-                mRpcServiceCollector.parseServiceInterface(aServiceClass);
+                mRpcServiceCollector.parseServiceInterface(aServiceClass, false);
+            }
+            return this;
+        }
+
+        /**
+         * Register OOB interface.
+         *
+         * @param oobClass List of OOB interfaces.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
+         *
+         * @throws DuplicateRpcServiceIdentifierException If two interfaces have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws DuplicateRpcMethodIdentifierException If two methods in the same interface have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws MissingRpcIdentifierException If {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} is missing form an interface or method
+         * @throws IllegalMethodSignatureException If the signature, parameter and return type, of a method is wrong
+         */
+        public Builder registerOob(Class... oobClass) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
+            for(Class aOobClass : oobClass) {
+                mRpcServiceCollector.parseServiceInterface(aOobClass, true);
             }
             return this;
         }

@@ -14,6 +14,13 @@ final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
         mRpcClientChannel.receivedRpcPacket((WirePacketFormat.WirePacket) msg);
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if(cause != null) {
+            cause.printStackTrace();
+        }
+    }
+
     void setRpcClientChannel(RpcClientChannelImpl rpcClientChannel) {
         mRpcClientChannel = rpcClientChannel;
     }

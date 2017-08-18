@@ -24,8 +24,8 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
 
         private final RpcServiceCollector.RpcServiceInfo mRpcServiceInfo;
 
-        RpcInvocationHandler(Class classOfService) {
-            mRpcServiceInfo = mProtobufRpcClient.getRpcServiceCollector().getServiceInfo(classOfService);
+        RpcInvocationHandler(RpcServiceCollector.RpcServiceInfo serviceInfo) {
+            mRpcServiceInfo = serviceInfo;
         }
 
         @Override
@@ -70,6 +70,8 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
     private final Map<Long, Thread> mWaitingRequestThreads = new ConcurrentHashMap<>();
     private final Map<Long, WirePacketFormat.WirePacket> mRequestResponseMap = new ConcurrentHashMap<>();
 
+    private final Map<Class, Object> mOobHandlerMap = new HashMap<>();
+
     RpcClientChannelImpl(
             ProtobufRpcClient protobufRpcClient,
             Channel channel,
@@ -88,11 +90,23 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
         if(!mProxyMap.containsKey(classOfService)) {
             RpcServiceCollector.RpcServiceInfo serviceInfo = mProtobufRpcClient.getRpcServiceCollector().getServiceInfo(classOfService);
             if(serviceInfo != null) {
-                mProxyMap.put(classOfService, Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { classOfService }, new RpcInvocationHandler(classOfService)));
+                mProxyMap.put(classOfService, Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { classOfService }, new RpcInvocationHandler(serviceInfo)));
             }
         }
 
         return (T) mProxyMap.get(classOfService);
+    }
+
+    @Override
+    public <T> void addOobHandler(Class<T> classOfOob, T objectOfOob) {
+        if(!mOobHandlerMap.containsKey(classOfOob)) {
+            RpcServiceCollector.RpcServiceInfo serviceInfo = mProtobufRpcClient.getRpcServiceCollector().getServiceInfo(classOfOob);
+            if((serviceInfo == null) || !serviceInfo.isOob()) {
+                throw new IllegalArgumentException(String.format("Class<%s> not registered for OOB handling.", classOfOob.getName()));
+            }
+        }
+
+        mOobHandlerMap.put(classOfOob, objectOfOob);
     }
 
     @Override
@@ -105,18 +119,14 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
         mChannel.close().syncUninterruptibly();
 
         mProxyMap.clear();
+        mOobHandlerMap.clear();
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     void receivedRpcPacket(WirePacketFormat.WirePacket wirePacket) {
         if((wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) || (wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR)) {
-            Thread thread = mWaitingRequestThreads.get(wirePacket.getMessageIdentifier());
-            if(thread != null) {
-                mRequestResponseMap.put(wirePacket.getMessageIdentifier(), wirePacket);
-                synchronized (thread) {
-                    thread.notify();
-                }
-            }
+            handleRpcResponse(wirePacket);
+        } else if(wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_OOB) {
+            handleOob(wirePacket);
         }
     }
 
@@ -137,5 +147,35 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
         }
 
         return mRequestResponseMap.get(wirePacket.getMessageIdentifier());
+    }
+
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    private void handleRpcResponse(WirePacketFormat.WirePacket wirePacket) {
+        Thread thread = mWaitingRequestThreads.get(wirePacket.getMessageIdentifier());
+        if(thread != null) {
+            mRequestResponseMap.put(wirePacket.getMessageIdentifier(), wirePacket);
+            synchronized (thread) {
+                thread.notify();
+            }
+        }
+    }
+
+    private void handleOob(WirePacketFormat.WirePacket wirePacket) {
+        WirePacketFormat.ServiceIdentifier serviceIdentifier = wirePacket.getServiceIdentifier();
+        RpcServiceCollector.RpcServiceInfo serviceInfo;
+        RpcServiceCollector.RpcMethodInfo methodInfo;
+        Object oobHandler;
+
+        if(((serviceInfo = mProtobufRpcClient.getRpcServiceCollector().getServiceInfo(serviceIdentifier.getServiceIdentifier())) != null) &&
+                ((methodInfo = serviceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier())) != null) &&
+                ((oobHandler = mOobHandlerMap.get(serviceInfo.getService())) != null)) {
+            try {
+                AbstractMessage requestMessage = (AbstractMessage) methodInfo.getRequestMessageParser().invoke(null, wirePacket.getPayload().toByteArray());
+                methodInfo.getMethod().invoke(oobHandler, requestMessage);
+            } catch (IllegalAccessException | InvocationTargetException ignore) {
+            }
+        } else {
+            throw new RpcCallException(String.format("Unable to find OOB handler for service identifier: (%d, %d)", serviceIdentifier.getServiceIdentifier(), serviceIdentifier.getMethodIdentifier()));
+        }
     }
 }

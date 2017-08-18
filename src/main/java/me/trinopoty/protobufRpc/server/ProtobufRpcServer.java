@@ -264,7 +264,7 @@ public final class ProtobufRpcServer {
      * @throws ServiceConstructorNotFoundException If the signature of the implementation class constructor is wrong
      */
     public synchronized <T> void addServiceImplementation(Class<T> classOfService, Class<? extends T> implOfService) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException, ServiceConstructorNotFoundException {
-        mRpcServiceCollector.parseServiceInterface(classOfService);
+        mRpcServiceCollector.parseServiceInterface(classOfService, false);
         RpcServiceCollector.RpcServiceInfo serviceInfo = mRpcServiceCollector.getServiceInfo(classOfService);
         assert serviceInfo != null;
 
@@ -334,7 +334,7 @@ public final class ProtobufRpcServer {
 
     private Constructor getServiceImplementationConstructor(Class implClass) throws ServiceConstructorNotFoundException {
         try {
-            @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor();
+            @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor(RpcServerChannel.class);
             if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
                 throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
             }
