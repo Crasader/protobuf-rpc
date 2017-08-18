@@ -18,8 +18,6 @@ final class RpcClientChannelImpl implements RpcClientChannel {
 
     private static final long DEFAULT_READ_TIMEOUT = 5 * 1000;
 
-    private static HashMap<Class<? extends AbstractMessage>, Method> PROTOBUF_PARSER = new HashMap<>();
-
     private final class RpcInvocationHandler implements InvocationHandler {
 
         private final RpcServiceCollector.RpcServiceInfo mRpcServiceInfo;
@@ -46,12 +44,9 @@ final class RpcClientChannelImpl implements RpcClientChannel {
 
                 WirePacketFormat.WirePacket responsePacket = callRpcAndWaitForResponse(wirePacketBuilder.build());
 
-                Method parserMethod = getProtobufParserMethod(methodInfo.getRequestMessageType());
-                assert parserMethod != null;
-
                 AbstractMessage responseMessage = null;
                 try {
-                    responseMessage = (AbstractMessage) parserMethod.invoke(null, (Object) responsePacket.getPayload().toByteArray());
+                    responseMessage = (AbstractMessage) methodInfo.getResponseMessageParser().invoke(null, (Object) responsePacket.getPayload().toByteArray());
                 } catch (IllegalAccessException | InvocationTargetException ignore) {
                 }
 
@@ -65,19 +60,6 @@ final class RpcClientChannelImpl implements RpcClientChannel {
             }
 
             return null;
-        }
-
-        @SuppressWarnings("JavaReflectionMemberAccess")
-        private Method getProtobufParserMethod(Class<? extends AbstractMessage> messageClass) {
-            if(PROTOBUF_PARSER.get(messageClass) == null) {
-                try {
-                    Method parserMethod = messageClass.getMethod("parseFrom", byte[].class);
-                    PROTOBUF_PARSER.put(messageClass, parserMethod);
-                } catch (NoSuchMethodException ignore) {
-                }
-            }
-
-            return PROTOBUF_PARSER.get(messageClass);
         }
     }
 

@@ -14,8 +14,6 @@ import java.util.HashMap;
 
 final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
-    private static HashMap<Class<? extends AbstractMessage>, Method> PROTOBUF_PARSER = new HashMap<>();
-
     private final ProtobufRpcServer mProtobufRpcServer;
     private final HashMap<Class, Object> mServiceImplementationObjectMap = new HashMap<>();
 
@@ -37,11 +35,9 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                     RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
                     if(methodInfo != null) {
                         AbstractMessage requestMessage = null;
-                        Method parserMethod = getProtobufParserMethod(methodInfo.getRequestMessageType());
-                        assert parserMethod != null;
 
                         try {
-                            requestMessage = (AbstractMessage) parserMethod.invoke(null, (Object) requestWirePacket.getPayload().toByteArray());
+                            requestMessage = (AbstractMessage) methodInfo.getRequestMessageParser().invoke(null, (Object) requestWirePacket.getPayload().toByteArray());
                         } catch (IllegalAccessException | InvocationTargetException ignore) {
                         }
 
@@ -104,18 +100,5 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         return new Pair<>(serviceInfo, mServiceImplementationObjectMap.get(serviceInfo.getImplClass()));
-    }
-
-    @SuppressWarnings("JavaReflectionMemberAccess")
-    private Method getProtobufParserMethod(Class<? extends AbstractMessage> messageClass) {
-        if(PROTOBUF_PARSER.get(messageClass) == null) {
-            try {
-                Method parserMethod = messageClass.getMethod("parseFrom", byte[].class);
-                PROTOBUF_PARSER.put(messageClass, parserMethod);
-            } catch (NoSuchMethodException ignore) {
-            }
-        }
-
-        return PROTOBUF_PARSER.get(messageClass);
     }
 }

@@ -17,12 +17,15 @@ import java.util.Map;
 
 public final class RpcServiceCollector {
 
+    @SuppressWarnings("WeakerAccess")
     public static final class RpcMethodInfo {
 
         private Method mMethod;
         private int mMethodIdentifier;
         private Class<? extends AbstractMessage> mRequestMessageType;
         private Class<? extends AbstractMessage> mResponseMessageType;
+        private Method mRequestMessageParser;
+        private Method mResponseMessageParser;
 
         public Method getMethod() {
             return mMethod;
@@ -39,8 +42,17 @@ public final class RpcServiceCollector {
         public Class<? extends AbstractMessage> getResponseMessageType() {
             return mResponseMessageType;
         }
+
+        public Method getRequestMessageParser() {
+            return mRequestMessageParser;
+        }
+
+        public Method getResponseMessageParser() {
+            return mResponseMessageParser;
+        }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static final class RpcServiceInfo {
 
         private Class mService;
@@ -164,6 +176,12 @@ public final class RpcServiceCollector {
                 //noinspection unchecked
                 rpcMethodInfo.mRequestMessageType = (Class<? extends AbstractMessage>) method.getParameterTypes()[0];
 
+                rpcMethodInfo.mRequestMessageParser = getProtobufParserMethod(rpcMethodInfo.mRequestMessageType);
+                rpcMethodInfo.mResponseMessageParser = getProtobufParserMethod(rpcMethodInfo.mResponseMessageType);
+
+                assert rpcMethodInfo.mRequestMessageParser != null;
+                assert rpcMethodInfo.mResponseMessageParser != null;
+
                 rpcMethodInfoMap.put(method, rpcMethodInfo);
                 rpcMethodInfoIdentifierMap.put(rpcMethodInfo.mMethodIdentifier, rpcMethodInfo);
             }
@@ -173,5 +191,15 @@ public final class RpcServiceCollector {
         } while (false);
 
         return rpcServiceInfo;
+    }
+
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    private Method getProtobufParserMethod(Class<? extends AbstractMessage> messageClass) {
+        Method parserMethod = null;
+        try {
+            parserMethod = messageClass.getMethod("parseFrom", byte[].class);
+        } catch (NoSuchMethodException ignore) {
+        }
+        return parserMethod;
     }
 }
