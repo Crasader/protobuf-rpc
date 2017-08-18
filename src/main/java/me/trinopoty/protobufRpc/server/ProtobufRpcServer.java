@@ -30,6 +30,11 @@ public final class ProtobufRpcServer {
     private static final AtomicInteger sClientEventLoopRefCount = new AtomicInteger(0);
     private static EventLoopGroup sClientEventLoopGroup;
 
+    /**
+     * The builder class for {@link ProtobufRpcServer} instance.
+     * All configuration is done in this class.
+     */
+    @SuppressWarnings({"unused", "UnusedReturnValue"})
     public static final class Builder {
 
         private InetSocketAddress mLocalAddress = null;
@@ -37,55 +42,111 @@ public final class ProtobufRpcServer {
         private SslContext mSslContext = null;
 
         private int mBacklogCount = 5;
-        private Integer mMaxDecoderPacketLength = null;
+        private Integer mMaxReceivePacketLength = null;
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
 
         public Builder() {
         }
 
+        /**
+         * Sets the local port to listen for non-SSL connections.
+         *
+         * @param port The port to listen for non-SSL connections.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setLocalPort(int port) {
             mLocalAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
             return this;
         }
 
+        /**
+         * Sets the local address to listen for non-SSL connections.
+         *
+         * @param localAddress The address to listen for non-SSL connections.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setLocalAddress(InetSocketAddress localAddress) {
             mLocalAddress = localAddress;
             return this;
         }
 
+        /**
+         * Sets the local port to listen for SSL connections.
+         *
+         * @param port The port to listen for SSL connections.
+         * @param sslContext The SSL context to use for SSL connections.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setSslLocalPort(int port, SslContext sslContext) {
             mSslLocalAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
             mSslContext = sslContext;
             return this;
         }
 
+        /**
+         * Sets the local address to listen for SSL connections.
+         *
+         * @param localAddress The address to listen for SSL connections.
+         * @param sslContext The SSL context to use for SSL connections.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setSslLocalAddress(InetSocketAddress localAddress, SslContext sslContext) {
             mSslLocalAddress = localAddress;
             mSslContext = sslContext;
             return this;
         }
 
+        /**
+         * Set the TCP connection backlog count.
+         *
+         * @param backlogCount The TCP connection backlog count.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setBacklogCount(int backlogCount) {
             mBacklogCount = backlogCount;
             return this;
         }
 
-        public Builder setMaxDecoderPacketLength(int maxDecoderPacketLength) {
-            mMaxDecoderPacketLength = maxDecoderPacketLength;
+        /**
+         * Set the maximum allowed receive packet length. Packets larger than this will be discarded.
+         *
+         * @param maxReceivePacketLength The maximum size of receive packets.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
+        public Builder setMaxReceivePacketLength(int maxReceivePacketLength) {
+            mMaxReceivePacketLength = maxReceivePacketLength;
             return this;
         }
 
+        /**
+         * Enable or disable traffic logging. If logging is enabled, a logging name must be provided.
+         *
+         * @param enableTrafficLogging Value indicating whether traffic logging would be enabled or disabled.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setEnableTrafficLogging(boolean enableTrafficLogging) {
             mEnableTrafficLogging = enableTrafficLogging;
             return this;
         }
 
+        /**
+         * Sets the name to use in log records.
+         *
+         * @param loggingName The name to use for all logs.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
         public Builder setLoggingName(String loggingName) {
             mLoggingName = loggingName;
             return this;
         }
 
+        /**
+         * Build an instance of {@link ProtobufRpcServer} with the provided configuration.
+         *
+         * @return Instance of {@link ProtobufRpcServer} if successful.
+         * @throws IllegalArgumentException On error.
+         */
         public ProtobufRpcServer build() {
             if((mLocalAddress == null) && (mSslLocalAddress == null)) {
                 throw new IllegalArgumentException("LocalAddress must be provided.");
@@ -102,7 +163,7 @@ public final class ProtobufRpcServer {
                 serverBootstrap.channel(NioServerSocketChannel.class);
                 serverBootstrap.childHandler(new RpcServerChannelInitializer(
                         protobufRpcServer,
-                        mMaxDecoderPacketLength,
+                        mMaxReceivePacketLength,
                         null,
                         mEnableTrafficLogging,
                         mLoggingName));
@@ -117,7 +178,7 @@ public final class ProtobufRpcServer {
                 sslServerBootstrap.channel(NioServerSocketChannel.class);
                 sslServerBootstrap.childHandler(new RpcServerChannelInitializer(
                         protobufRpcServer,
-                        mMaxDecoderPacketLength,
+                        mMaxReceivePacketLength,
                         mSslContext,
                         mEnableTrafficLogging,
                         mLoggingName));

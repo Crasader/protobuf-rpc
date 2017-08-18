@@ -41,7 +41,7 @@ public final class ProtobufRpcClient {
          * Set the maximum allowed receive packet length. Packets larger than this will be discarded.
          *
          * @param maxReceivePacketLength The maximum size of receive packets.
-         * @return {@link ProtobufRpcClient} instance for chaining.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
          */
         public Builder setMaxReceivePacketLength(int maxReceivePacketLength) {
             mMaxReceivePacketLength = maxReceivePacketLength;
@@ -52,7 +52,7 @@ public final class ProtobufRpcClient {
          * Set the maximum receive timeout.
          *
          * @param defaultReceiveTimeoutMillis The maximum receive timeout in milliseconds.
-         * @return {@link ProtobufRpcClient} instance for chaining.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
          */
         public Builder setDefaultReceiveTimeoutMillis(long defaultReceiveTimeoutMillis) {
             mDefaultReceiveTimeoutMillis = defaultReceiveTimeoutMillis;
@@ -62,8 +62,8 @@ public final class ProtobufRpcClient {
         /**
          * Enable or disable traffic logging. If logging is enabled, a logging name must be provided.
          *
-         * @param enableTrafficLogging Value indicating whether traffic logging whould be enabled or disabled.
-         * @return {@link ProtobufRpcClient} instance for chaining.
+         * @param enableTrafficLogging Value indicating whether traffic logging would be enabled or disabled.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
          */
         public Builder setEnableTrafficLogging(boolean enableTrafficLogging) {
             mEnableTrafficLogging = enableTrafficLogging;
@@ -74,7 +74,7 @@ public final class ProtobufRpcClient {
          * Sets the name to use in log records.
          *
          * @param loggingName The name to use for all logs.
-         * @return {@link ProtobufRpcClient} instance for chaining.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
          */
         public Builder setLoggingName(String loggingName) {
             mLoggingName = loggingName;
@@ -85,7 +85,7 @@ public final class ProtobufRpcClient {
          * Sets the SSL context for SSL connections.
          *
          * @param sslContext The SSL Context.
-         * @return {@link ProtobufRpcClient} instance for chaining.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
          */
         public Builder setSslContext(SslContext sslContext) {
             mSslContext = sslContext;
@@ -96,7 +96,7 @@ public final class ProtobufRpcClient {
          * Build an instance of {@link ProtobufRpcClient} with the provided configuration.
          *
          * @return Instance of {@link ProtobufRpcClient} if successful.
-         * @throws IllegalArgumentException If there is any error.
+         * @throws IllegalArgumentException On error.
          */
         public ProtobufRpcClient build() {
             if(mEnableTrafficLogging && (mLoggingName == null)) {
