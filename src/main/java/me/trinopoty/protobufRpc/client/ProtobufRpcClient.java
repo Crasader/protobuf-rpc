@@ -23,6 +23,11 @@ public final class ProtobufRpcClient {
     private static final AtomicInteger sClientEventLoopRefCount = new AtomicInteger(0);
     private static EventLoopGroup sClientEventLoopGroup;
 
+    /**
+     * The builder class for {@link ProtobufRpcClient} instance.
+     * All configuration is done in this class.
+     */
+    @SuppressWarnings("unused")
     public static final class Builder {
 
         private Integer mMaxReceivePacketLength = null;
@@ -34,31 +39,67 @@ public final class ProtobufRpcClient {
         public Builder() {
         }
 
+        /**
+         * Set the maximum allowed receive packet length. Packets larger than this will be discarded.
+         *
+         * @param maxReceivePacketLength The maximum size of receive packets.
+         * @return {@link ProtobufRpcClient} instance for chaining.
+         */
         public Builder setMaxReceivePacketLength(int maxReceivePacketLength) {
             mMaxReceivePacketLength = maxReceivePacketLength;
             return this;
         }
 
+        /**
+         * Set the maximum receive timeout.
+         *
+         * @param defaultReceiveTimeoutMillis The maximum receive timeout in milliseconds.
+         * @return {@link ProtobufRpcClient} instance for chaining.
+         */
         public Builder setDefaultReceiveTimeoutMillis(long defaultReceiveTimeoutMillis) {
             mDefaultReceiveTimeoutMillis = defaultReceiveTimeoutMillis;
             return this;
         }
 
+        /**
+         * Enable or disable traffic logging. If logging is enabled, a logging name must be provided.
+         *
+         * @param enableTrafficLogging Value indicating whether traffic logging whould be enabled or disabled.
+         * @return {@link ProtobufRpcClient} instance for chaining.
+         */
         public Builder setEnableTrafficLogging(boolean enableTrafficLogging) {
             mEnableTrafficLogging = enableTrafficLogging;
             return this;
         }
 
+        /**
+         * Sets the name to use in log records.
+         *
+         * @param loggingName The name to use for all logs.
+         * @return {@link ProtobufRpcClient} instance for chaining.
+         */
         public Builder setLoggingName(String loggingName) {
             mLoggingName = loggingName;
             return this;
         }
 
+        /**
+         * Sets the SSL context for SSL connections.
+         *
+         * @param sslContext The SSL Context.
+         * @return {@link ProtobufRpcClient} instance for chaining.
+         */
         public Builder setSslContext(SslContext sslContext) {
             mSslContext = sslContext;
             return this;
         }
 
+        /**
+         * Build an instance of {@link ProtobufRpcClient} with the provided configuration.
+         *
+         * @return Instance of {@link ProtobufRpcClient} if successful.
+         * @throws IllegalArgumentException If there is any error.
+         */
         public ProtobufRpcClient build() {
             if(mEnableTrafficLogging && (mLoggingName == null)) {
                 throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
