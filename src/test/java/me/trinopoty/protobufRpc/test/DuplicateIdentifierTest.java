@@ -72,18 +72,16 @@ public final class DuplicateIdentifierTest {
     public void duplicateServiceIdentifierTest() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
+        builder.addServiceImplementation(DuplicateService01.class, DuplicateService01Impl.class);
+        builder.addServiceImplementation(DuplicateService02.class, DuplicateService02Impl.class);
         ProtobufRpcServer server = builder.build();
-
-        server.addServiceImplementation(DuplicateService01.class, DuplicateService01Impl.class);
-        server.addServiceImplementation(DuplicateService02.class, DuplicateService02Impl.class);
     }
 
     @Test(expected = DuplicateRpcMethodIdentifierException.class)
     public void duplicateMethodIdentifierTest() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
+        builder.addServiceImplementation(DuplicateMethod01.class, DuplicateMethod01Impl.class);
         ProtobufRpcServer server = builder.build();
-
-        server.addServiceImplementation(DuplicateMethod01.class, DuplicateMethod01Impl.class);
     }
 }

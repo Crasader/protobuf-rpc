@@ -49,9 +49,8 @@ public final class EchoTest {
     public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
+        builder.addServiceImplementation(EchoService.class, EchoServiceImpl.class);
         ProtobufRpcServer server = builder.build();
-
-        server.addServiceImplementation(EchoService.class, EchoServiceImpl.class);
 
         server.startServer();
         sProtobufRpcServer = server;

@@ -144,6 +144,26 @@ public final class ProtobufRpcServer {
         }
 
         /**
+         * Add the implementation class of a service interface.
+         * @param classOfService The interface defining the service.
+         * @param implOfService The class implementing the interface of the service.
+         *
+         * @throws DuplicateRpcServiceIdentifierException If two interfaces have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws DuplicateRpcMethodIdentifierException If two methods in the same interface have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws MissingRpcIdentifierException If {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} is missing form an interface or method
+         * @throws IllegalMethodSignatureException If the signature, parameter and return type, of a method is wrong
+         * @throws ServiceConstructorNotFoundException If the signature of the implementation class constructor is wrong
+         */
+        public synchronized <T> void addServiceImplementation(Class<T> classOfService, Class<? extends T> implOfService) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException, ServiceConstructorNotFoundException {
+            mRpcServiceCollector.parseServiceInterface(classOfService, false);
+            RpcServiceCollector.RpcServiceInfo serviceInfo = mRpcServiceCollector.getServiceInfo(classOfService);
+            assert serviceInfo != null;
+
+            serviceInfo.setImplClass(implOfService);
+            serviceInfo.setImplClassConstructor(getServiceImplementationConstructor(implOfService));
+        }
+
+        /**
          * Register OOB interface.
          *
          * @param oobClass List of OOB interfaces.
@@ -208,6 +228,19 @@ public final class ProtobufRpcServer {
             }
 
             return protobufRpcServer;
+        }
+
+        private static Constructor getServiceImplementationConstructor(Class implClass) throws ServiceConstructorNotFoundException {
+            try {
+                @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor(RpcServerChannel.class);
+                if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
+                    throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
+                }
+
+                return constructor;
+            } catch (NoSuchMethodException ex) {
+                throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
+            }
         }
     }
 
@@ -274,26 +307,6 @@ public final class ProtobufRpcServer {
     }
 
     /**
-     * Add the implementation class of a service interface.
-     * @param classOfService The interface defining the service.
-     * @param implOfService The class implementing the interface of the service.
-     *
-     * @throws DuplicateRpcServiceIdentifierException If two interfaces have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
-     * @throws DuplicateRpcMethodIdentifierException If two methods in the same interface have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
-     * @throws MissingRpcIdentifierException If {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} is missing form an interface or method
-     * @throws IllegalMethodSignatureException If the signature, parameter and return type, of a method is wrong
-     * @throws ServiceConstructorNotFoundException If the signature of the implementation class constructor is wrong
-     */
-    public synchronized <T> void addServiceImplementation(Class<T> classOfService, Class<? extends T> implOfService) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException, ServiceConstructorNotFoundException {
-        mRpcServiceCollector.parseServiceInterface(classOfService, false);
-        RpcServiceCollector.RpcServiceInfo serviceInfo = mRpcServiceCollector.getServiceInfo(classOfService);
-        assert serviceInfo != null;
-
-        serviceInfo.setImplClass(implOfService);
-        serviceInfo.setImplClassConstructor(getServiceImplementationConstructor(implOfService));
-    }
-
-    /**
      * Bind to ports and start this server.
      *
      * @throws IllegalStateException If the server is already running.
@@ -351,18 +364,5 @@ public final class ProtobufRpcServer {
     private void setSslServerBootstrap(InetSocketAddress localAddress, ServerBootstrap serverBootstrap) {
         mSslLocalAddress = localAddress;
         mSslServerBootstrap = serverBootstrap;
-    }
-
-    private Constructor getServiceImplementationConstructor(Class implClass) throws ServiceConstructorNotFoundException {
-        try {
-            @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor(RpcServerChannel.class);
-            if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
-                throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
-            }
-
-            return constructor;
-        } catch (NoSuchMethodException ex) {
-            throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
-        }
     }
 }
