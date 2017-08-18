@@ -1,6 +1,8 @@
 package me.trinopoty.protobufRpc.exception;
 
-public final class RpcCallServerException extends RuntimeException {
+import java.io.IOException;
+
+public final class RpcCallServerException extends IOException {
 
     public RpcCallServerException() {
         super();
@@ -16,9 +18,5 @@ public final class RpcCallServerException extends RuntimeException {
 
     public RpcCallServerException(Throwable cause) {
         super(cause);
-    }
-
-    protected RpcCallServerException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
     }
 }
