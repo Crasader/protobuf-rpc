@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The client side aspect of Protobuf-RPC.
  */
+@SuppressWarnings("WeakerAccess")
 public final class ProtobufRpcClient {
 
     private static final Object sClientEventLoopLock = new Object();
@@ -125,18 +126,54 @@ public final class ProtobufRpcClient {
         }
     }
 
+    /**
+     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * to communicate with the server.
+     *
+     * @param host The hostname of the server to connect to.
+     * @param port The port of the server to connect to.
+     *
+     * @return Use the returned instance to communicate with the server.
+     */
     public RpcClientChannel getClientChannel(String host, int port) {
         return getClientChannel(host, port, false);
     }
 
+    /**
+     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * to communicate with the server.
+     *
+     * @param host The hostname of the server to connect to.
+     * @param port The port of the server to connect to.
+     * @param ssl Whether to encrypt the connection to the server.
+     *
+     * @return Use the returned instance to communicate with the server.
+     */
     public RpcClientChannel getClientChannel(String host, int port, boolean ssl) {
         return getClientChannel(new InetSocketAddress(host, port), ssl);
     }
 
+    /**
+     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * to communicate with the server.
+     *
+     * @param remoteAddress The address (host, port) of ther server to connect to.
+     *
+     * @return Use the returned instance to communicate with the server.
+     */
     public RpcClientChannel getClientChannel(InetSocketAddress remoteAddress) {
         return getClientChannel(remoteAddress, false);
     }
 
+    /**
+     * Connect to a remote server and return a {@link RpcClientChannel} instance
+     * to communicate with the server.
+     *
+     * @param remoteAddress The address (host, port) of ther server to connect to.
+     * @param ssl Whether to encrypt the connection to the server.
+     *
+     * @return Use the returned instance to communicate with the server.
+     */
     public RpcClientChannel getClientChannel(InetSocketAddress remoteAddress, boolean ssl) {
         ChannelFuture channelFuture = (!ssl)? mBootstrap.connect(remoteAddress) : mSslBootstrap.connect(remoteAddress);
         channelFuture.syncUninterruptibly();
