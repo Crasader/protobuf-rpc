@@ -1,8 +1,6 @@
 package me.trinopoty.protobufRpc.exception;
 
-import java.io.IOException;
-
-public final class RpcCallServerException extends IOException {
+public final class RpcCallServerException extends RuntimeException {
 
     public RpcCallServerException() {
         super();

@@ -35,15 +35,7 @@ public final class DuplicateIdentifierTest {
 
     public static class DuplicateService01Impl implements DuplicateService01 {
 
-        @Override
-        public Empty empty(Empty empty) {
-            return null;
-        }
-    }
-
-    public static class DuplicateService02Impl implements DuplicateService02 {
-
-        public DuplicateService02Impl(RpcServerChannel serverChannel) {
+        public DuplicateService01Impl(RpcServerChannel serverChannel) {
         }
 
         @Override
@@ -64,6 +56,17 @@ public final class DuplicateIdentifierTest {
 
         @Override
         public Empty empty2(Empty empty) {
+            return null;
+        }
+    }
+
+    public static class DuplicateService02Impl implements DuplicateService02 {
+
+        public DuplicateService02Impl(RpcServerChannel serverChannel) {
+        }
+
+        @Override
+        public Empty empty(Empty empty) {
             return null;
         }
     }
