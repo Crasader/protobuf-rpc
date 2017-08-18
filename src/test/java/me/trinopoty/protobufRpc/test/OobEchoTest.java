@@ -39,11 +39,7 @@ public final class OobEchoTest {
 
         @Override
         public EchoOuterClass.Echo echo(EchoOuterClass.Echo request) {
-            try {
-                mRpcServerChannel.getOobService(OobService.class).oob1(request);
-            } catch (DuplicateRpcServiceIdentifierException | MissingRpcIdentifierException | DuplicateRpcMethodIdentifierException | IllegalMethodSignatureException e) {
-                e.printStackTrace();
-            }
+            mRpcServerChannel.getOobService(OobService.class).oob1(request);
             return request;
         }
     }
@@ -55,6 +51,7 @@ public final class OobEchoTest {
     public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
         builder.setLocalPort(6000);
+        builder.registerOob(OobService.class);
         ProtobufRpcServer server = builder.build();
 
         server.addServiceImplementation(EchoService.class, EchoServiceImpl.class);

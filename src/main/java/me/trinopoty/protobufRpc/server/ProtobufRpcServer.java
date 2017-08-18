@@ -46,6 +46,8 @@ public final class ProtobufRpcServer {
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
 
+        private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
+
         public Builder() {
         }
 
@@ -142,6 +144,24 @@ public final class ProtobufRpcServer {
         }
 
         /**
+         * Register OOB interface.
+         *
+         * @param oobClass List of OOB interfaces.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         *
+         * @throws DuplicateRpcServiceIdentifierException If two interfaces have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws DuplicateRpcMethodIdentifierException If two methods in the same interface have same {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} value
+         * @throws MissingRpcIdentifierException If {@link me.trinopoty.protobufRpc.annotation.RpcIdentifier} is missing form an interface or method
+         * @throws IllegalMethodSignatureException If the signature, parameter and return type, of a method is wrong
+         */
+        public Builder registerOob(Class... oobClass) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
+            for(Class aOobClass : oobClass) {
+                mRpcServiceCollector.parseServiceInterface(aOobClass, true);
+            }
+            return this;
+        }
+
+        /**
          * Build an instance of {@link ProtobufRpcServer} with the provided configuration.
          *
          * @return Instance of {@link ProtobufRpcServer} if successful.
@@ -155,7 +175,7 @@ public final class ProtobufRpcServer {
                 throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
             }
 
-            ProtobufRpcServer protobufRpcServer = new ProtobufRpcServer();
+            ProtobufRpcServer protobufRpcServer = new ProtobufRpcServer(mRpcServiceCollector);
 
             if(mLocalAddress != null) {
                 ServerBootstrap serverBootstrap = new ServerBootstrap();
@@ -191,7 +211,7 @@ public final class ProtobufRpcServer {
         }
     }
 
-    private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
+    private final RpcServiceCollector mRpcServiceCollector;
 
     private InetSocketAddress mLocalAddress;
     private ServerBootstrap mServerBootstrap;
@@ -203,7 +223,8 @@ public final class ProtobufRpcServer {
 
     private boolean mServerStarted = false;
 
-    private ProtobufRpcServer() {
+    private ProtobufRpcServer(RpcServiceCollector rpcServiceCollector) {
+        mRpcServiceCollector = rpcServiceCollector;
     }
 
     @SuppressWarnings("Duplicates")

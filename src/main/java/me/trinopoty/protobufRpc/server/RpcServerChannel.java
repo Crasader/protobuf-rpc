@@ -55,12 +55,12 @@ public final class RpcServerChannel {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getOobService(Class<T> classOfService) throws DuplicateRpcServiceIdentifierException, MissingRpcIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
-        mProtobufRpcServer.getRpcServiceCollector().parseServiceInterface(classOfService, true);
-
+    public <T> T getOobService(Class<T> classOfService) {
         RpcServiceCollector.RpcServiceInfo serviceInfo = mProtobufRpcServer.getRpcServiceCollector().getServiceInfo(classOfService);
-        assert serviceInfo != null;
-
-        return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { classOfService }, new OobInvocationHandler(serviceInfo));
+        if(serviceInfo != null) {
+            return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { classOfService }, new OobInvocationHandler(serviceInfo));
+        } else {
+            throw new IllegalArgumentException(String.format("Class<%s> not registered for OOB handling.", classOfService.getName()));
+        }
     }
 }
