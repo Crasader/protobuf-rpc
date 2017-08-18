@@ -17,7 +17,7 @@ import java.util.Map;
 
 public final class RpcServiceCollector {
 
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public static final class RpcMethodInfo {
 
         private Method mMethod;
