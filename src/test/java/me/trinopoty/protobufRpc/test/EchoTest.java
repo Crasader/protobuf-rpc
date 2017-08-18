@@ -5,6 +5,7 @@ import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.RpcClientChannel;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
+import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

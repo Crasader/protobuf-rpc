@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package me.trinopoty.protobufRpc.test;
+package me.trinopoty.protobufRpc.test.proto;
 
 message Echo {
     string message = 1;
