@@ -1,6 +1,5 @@
 package me.trinopoty.protobufRpc.test;
 
-import com.google.protobuf.Empty;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
@@ -12,32 +11,39 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
-public final class EchoTest {
+public final class OobEchoTest {
 
     @RpcIdentifier(1)
     public interface EchoService {
 
         @RpcIdentifier(1)
-        Empty empty(Empty request);
-
-        @RpcIdentifier(2)
         EchoOuterClass.Echo echo(EchoOuterClass.Echo request);
+    }
+
+    @RpcIdentifier(2)
+    public interface OobService {
+
+        @RpcIdentifier(1)
+        void oob1(EchoOuterClass.Echo message);
     }
 
     public static final class EchoServiceImpl implements EchoService {
 
-        public EchoServiceImpl(RpcServerChannel rpcServerChannel) {
-        }
+        private final RpcServerChannel mRpcServerChannel;
 
-        @Override
-        public Empty empty(Empty request) {
-            return request;
+        public EchoServiceImpl(RpcServerChannel rpcServerChannel) {
+            mRpcServerChannel = rpcServerChannel;
         }
 
         @Override
         public EchoOuterClass.Echo echo(EchoOuterClass.Echo request) {
+            try {
+                mRpcServerChannel.getOobService(OobService.class).oob1(request);
+            } catch (DuplicateRpcServiceIdentifierException | MissingRpcIdentifierException | DuplicateRpcMethodIdentifierException | IllegalMethodSignatureException e) {
+                e.printStackTrace();
+            }
             return request;
         }
     }
@@ -63,26 +69,21 @@ public final class EchoTest {
     }
 
     @Test
-    public void emptyTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
-        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
+    public void oobEchoTest01() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).registerOob(OobService.class).build();
         ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
         EchoService echoService = clientChannel.getService(EchoService.class);
 
-        assertNotNull(echoService.empty(Empty.getDefaultInstance()));
+        clientChannel.addOobHandler(OobService.class, new OobService() {
+            @Override
+            public void oob1(EchoOuterClass.Echo message) {
+                assertNotNull(message);
 
-        clientChannel.close();
-        client.close();
-    }
-
-    @Test
-    public void echoTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
-        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
-        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
-        EchoService echoService = clientChannel.getService(EchoService.class);
-
+                System.out.println("OOB: " + message.getMessage());
+            }
+        });
         EchoOuterClass.Echo echo = echoService.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello World").build());
         assertNotNull(echo);
-        assertEquals("Hello World", echo.getMessage());
 
         clientChannel.close();
         client.close();
