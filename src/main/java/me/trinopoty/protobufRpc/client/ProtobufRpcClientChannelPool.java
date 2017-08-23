@@ -8,7 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 
-final class ProtobufRpcClientChannelPool implements Closeable {
+public final class ProtobufRpcClientChannelPool implements Closeable {
 
     private static final class RpcClientChannelProxyImpl implements ProtobufRpcClientChannel {
 
