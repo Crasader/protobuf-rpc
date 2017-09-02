@@ -6,7 +6,7 @@ import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
-import me.trinopoty.protobufRpc.server.RpcServerChannel;
+import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannel;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,7 +28,7 @@ public final class EchoTest {
 
     public static final class EchoServiceImpl implements EchoService {
 
-        public EchoServiceImpl(RpcServerChannel rpcServerChannel) {
+        public EchoServiceImpl(ProtobufRpcServerChannel rpcServerChannel) {
         }
 
         @Override

@@ -18,7 +18,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     private final ProtobufRpcServer mProtobufRpcServer;
     private final HashMap<Class, Object> mServiceImplementationObjectMap = new HashMap<>();
 
-    private RpcServerChannel mRpcServerChannel;
+    private ProtobufRpcServerChannel mRpcServerChannel;
     private DisconnectReason mChannelDisconnectReason = DisconnectReason.CLIENT_CLOSE;
 
     RpcServerChannelHandler(ProtobufRpcServer protobufRpcServer) {
@@ -27,7 +27,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        mRpcServerChannel = new RpcServerChannel(mProtobufRpcServer, ctx.channel());
+        mRpcServerChannel = new ProtobufRpcServerChannel(mProtobufRpcServer, ctx.channel());
     }
 
     @Override

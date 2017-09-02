@@ -9,7 +9,7 @@ import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannelDisconnectListener;
-import me.trinopoty.protobufRpc.server.RpcServerChannel;
+import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannel;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -44,11 +44,11 @@ public final class DisconnectTest {
 
     public static final class EchoServiceImpl implements EchoService {
 
-        private final RpcServerChannel mRpcServerChannel;
+        private final ProtobufRpcServerChannel mRpcServerChannel;
 
         private Thread mCloseThread;
 
-        public EchoServiceImpl(RpcServerChannel rpcServerChannel) {
+        public EchoServiceImpl(ProtobufRpcServerChannel rpcServerChannel) {
             mRpcServerChannel = rpcServerChannel;
         }
 
@@ -121,7 +121,7 @@ public final class DisconnectTest {
         sProtobufRpcServer = server;
         sProtobufRpcServer.setChannelDisconnectListener(new ProtobufRpcServerChannelDisconnectListener() {
             @Override
-            public void channelDisconnected(RpcServerChannel channel, DisconnectReason reason) {
+            public void channelDisconnected(ProtobufRpcServerChannel channel, DisconnectReason reason) {
                 System.out.println("[Server] Channel disconnect event. Reason: " + reason);
             }
         });

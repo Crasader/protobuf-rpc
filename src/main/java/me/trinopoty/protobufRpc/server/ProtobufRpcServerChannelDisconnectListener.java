@@ -4,5 +4,5 @@ import me.trinopoty.protobufRpc.DisconnectReason;
 
 public interface ProtobufRpcServerChannelDisconnectListener {
 
-    void channelDisconnected(RpcServerChannel channel, DisconnectReason reason);
+    void channelDisconnected(ProtobufRpcServerChannel channel, DisconnectReason reason);
 }

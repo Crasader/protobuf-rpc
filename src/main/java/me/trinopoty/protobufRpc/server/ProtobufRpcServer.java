@@ -233,7 +233,7 @@ public final class ProtobufRpcServer {
 
         private static Constructor getServiceImplementationConstructor(Class implClass) throws ServiceConstructorNotFoundException {
             try {
-                @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor(RpcServerChannel.class);
+                @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor(ProtobufRpcServerChannel.class);
                 if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
                     throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
                 }
@@ -362,7 +362,7 @@ public final class ProtobufRpcServer {
         return mRpcServiceCollector;
     }
 
-    void sendChannelDisconnectEvent(RpcServerChannel serverChannel, DisconnectReason reason) {
+    void sendChannelDisconnectEvent(ProtobufRpcServerChannel serverChannel, DisconnectReason reason) {
         if(mChannelDisconnectListener != null) {
             mChannelDisconnectListener.channelDisconnected(serverChannel, reason);
         }

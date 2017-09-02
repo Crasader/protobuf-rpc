@@ -15,7 +15,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-public final class RpcServerChannel {
+public final class ProtobufRpcServerChannel {
 
     private final class OobInvocationHandler implements InvocationHandler {
 
@@ -51,7 +51,7 @@ public final class RpcServerChannel {
     private final ProtobufRpcServer mProtobufRpcServer;
     private final Channel mChannel;
 
-    RpcServerChannel(ProtobufRpcServer protobufRpcServer, Channel channel) {
+    ProtobufRpcServerChannel(ProtobufRpcServer protobufRpcServer, Channel channel) {
         mProtobufRpcServer = protobufRpcServer;
         mChannel = channel;
     }
