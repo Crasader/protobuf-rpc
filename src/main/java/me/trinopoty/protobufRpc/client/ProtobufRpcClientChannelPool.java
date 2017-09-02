@@ -31,6 +31,11 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
         }
 
         @Override
+        public void setChannelDisconnectListener(ProtobufRpcClientChannelDisconnectListener channelDisconnectListener) {
+            mRpcClientChannel.setChannelDisconnectListener(channelDisconnectListener);
+        }
+
+        @Override
         public boolean isActive() {
             return mRpcClientChannel.isActive();
         }

@@ -30,6 +30,13 @@ public interface ProtobufRpcClientChannel extends AutoCloseable {
     boolean isActive();
 
     /**
+     * Adds a listener for channel disconnect events.
+     *
+     * @param channelDisconnectListener The channel disconnect listener.
+     */
+    void setChannelDisconnectListener(ProtobufRpcClientChannelDisconnectListener channelDisconnectListener);
+
+    /**
      * Close the connection with the server.
      */
     void close();

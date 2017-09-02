@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
+import me.trinopoty.protobufRpc.DisconnectReason;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
@@ -255,6 +256,7 @@ public final class ProtobufRpcServer {
     private Channel mSslServerChannel = null;
 
     private boolean mServerStarted = false;
+    private ProtobufRpcServerChannelDisconnectListener mChannelDisconnectListener = null;
 
     private ProtobufRpcServer(RpcServiceCollector rpcServiceCollector) {
         mRpcServiceCollector = rpcServiceCollector;
@@ -352,8 +354,18 @@ public final class ProtobufRpcServer {
         mServerStarted = false;
     }
 
+    public void setChannelDisconnectListener(ProtobufRpcServerChannelDisconnectListener channelDisconnectListener) {
+        mChannelDisconnectListener = channelDisconnectListener;
+    }
+
     RpcServiceCollector getRpcServiceCollector() {
         return mRpcServiceCollector;
+    }
+
+    void sendChannelDisconnectEvent(RpcServerChannel serverChannel, DisconnectReason reason) {
+        if(mChannelDisconnectListener != null) {
+            mChannelDisconnectListener.channelDisconnected(serverChannel, reason);
+        }
     }
 
     private void setServerBootstrap(InetSocketAddress localAddress, ServerBootstrap serverBootstrap) {

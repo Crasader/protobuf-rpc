@@ -2,11 +2,15 @@ package me.trinopoty.protobufRpc.client;
 
 import com.google.protobuf.AbstractMessage;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import me.trinopoty.protobufRpc.DisconnectReason;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
 import me.trinopoty.protobufRpc.exception.RpcCallException;
 import me.trinopoty.protobufRpc.exception.RpcCallServerException;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
+final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFutureListener {
 
     private static final long DEFAULT_READ_TIMEOUT = 5 * 1000;
 
@@ -30,6 +34,10 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if(!isActive()) {
+                throw new RpcCallException("Channel is not active.");
+            }
+
             RpcServiceCollector.RpcMethodInfo methodInfo = mRpcServiceInfo.getMethodMap().get(method);
             assert methodInfo != null;
 
@@ -46,17 +54,21 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
             requestWirePacketBuilder.setPayload(requestMessage.toByteString());
 
             WirePacketFormat.WirePacket responseWirePacketPacket = callRpcAndWaitForResponse(requestWirePacketBuilder.build());
-            if(responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) {
-                try {
-                    return methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
-                } catch (IllegalAccessException | InvocationTargetException ex) {
-                    throw new RpcCallException("Unable to parse response message.", ex);
+            if(responseWirePacketPacket != null) {
+                if (responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) {
+                    try {
+                        return methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
+                    } catch (IllegalAccessException | InvocationTargetException ex) {
+                        throw new RpcCallException("Unable to parse response message.", ex);
+                    }
+                } else if (responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR) {
+                    WirePacketFormat.ErrorMessage errorMessage = WirePacketFormat.ErrorMessage.parseFrom(responseWirePacketPacket.getPayload());
+                    throw new RpcCallServerException(errorMessage.getMessage());
+                } else {
+                    throw new RpcCallException("Invalid response received: " + responseWirePacketPacket.toString());
                 }
-            } else if(responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR) {
-                WirePacketFormat.ErrorMessage errorMessage = WirePacketFormat.ErrorMessage.parseFrom(responseWirePacketPacket.getPayload());
-                throw new RpcCallServerException(errorMessage.getMessage());
             } else {
-                throw new RpcCallException("Invalid response received: " + responseWirePacketPacket.toString());
+                throw new RpcCallException("Response timeout.");
             }
         }
     }
@@ -72,6 +84,9 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
 
     private final Map<Class, Object> mOobHandlerMap = new HashMap<>();
 
+    private ProtobufRpcClientChannelDisconnectListener mChannelDisconnectListener = null;
+    private DisconnectReason mChannelDisconnectReason = DisconnectReason.SERVER_CLOSE;
+
     RpcClientChannelImpl(
             ProtobufRpcClient protobufRpcClient,
             Channel channel,
@@ -82,6 +97,8 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
 
         RpcClientChannelHandler rpcClientChannelHandler = (RpcClientChannelHandler) mChannel.pipeline().get("handler");
         rpcClientChannelHandler.setRpcClientChannel(this);
+
+        mChannel.closeFuture().addListener(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -115,11 +132,23 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
     }
 
     @Override
+    public void setChannelDisconnectListener(ProtobufRpcClientChannelDisconnectListener channelDisconnectListener) {
+        mChannelDisconnectListener = channelDisconnectListener;
+    }
+
+    @Override
     public void close() {
+        mChannelDisconnectReason = DisconnectReason.CLIENT_CLOSE;
         mChannel.close().syncUninterruptibly();
 
         mProxyMap.clear();
         mOobHandlerMap.clear();
+    }
+
+    @Override
+    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+        sendChannelDisconnectEvent(mChannelDisconnectReason);
+        mChannelDisconnectReason = DisconnectReason.SERVER_CLOSE;
     }
 
     void receivedRpcPacket(WirePacketFormat.WirePacket wirePacket) {
@@ -127,6 +156,18 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
             handleRpcResponse(wirePacket);
         } else if(wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_OOB) {
             handleOob(wirePacket);
+        }
+    }
+
+    void channelException(Throwable cause) {
+        if(cause != null) {
+            if((cause instanceof IOException) &&
+                    (cause.getMessage() != null) &&
+                    cause.getMessage().equals("Connection reset by peer")) {
+                mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
+            } else {
+                cause.printStackTrace();
+            }
         }
     }
 
@@ -176,6 +217,12 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel {
             }
         } else {
             throw new RpcCallException(String.format("Unable to find OOB handler for service identifier: (%d, %d)", serviceIdentifier.getServiceIdentifier(), serviceIdentifier.getMethodIdentifier()));
+        }
+    }
+
+    private void sendChannelDisconnectEvent(DisconnectReason reason) {
+        if(mChannelDisconnectListener != null) {
+            mChannelDisconnectListener.channelDisconnected(this, reason);
         }
     }
 }

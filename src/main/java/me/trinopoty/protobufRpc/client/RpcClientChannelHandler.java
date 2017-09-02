@@ -20,8 +20,8 @@ final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        if(cause != null) {
-            cause.printStackTrace();
+        if(mRpcClientChannel != null) {
+            mRpcClientChannel.channelException(cause);
         }
     }
 

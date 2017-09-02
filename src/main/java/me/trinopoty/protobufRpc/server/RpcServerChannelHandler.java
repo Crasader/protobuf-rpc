@@ -3,10 +3,12 @@ package me.trinopoty.protobufRpc.server;
 import com.google.protobuf.AbstractMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import me.trinopoty.protobufRpc.DisconnectReason;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
 import me.trinopoty.protobufRpc.util.Pair;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -16,8 +18,22 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     private final ProtobufRpcServer mProtobufRpcServer;
     private final HashMap<Class, Object> mServiceImplementationObjectMap = new HashMap<>();
 
+    private RpcServerChannel mRpcServerChannel;
+    private DisconnectReason mChannelDisconnectReason = DisconnectReason.CLIENT_CLOSE;
+
     RpcServerChannelHandler(ProtobufRpcServer protobufRpcServer) {
         mProtobufRpcServer = protobufRpcServer;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        mRpcServerChannel = new RpcServerChannel(mProtobufRpcServer, ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        mProtobufRpcServer.sendChannelDisconnectEvent(mRpcServerChannel, mChannelDisconnectReason);
+        mChannelDisconnectReason = DisconnectReason.CLIENT_CLOSE;
     }
 
     @Override
@@ -88,7 +104,13 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if(cause != null) {
-            cause.printStackTrace();
+            if ((cause instanceof IOException) &&
+                    (cause.getMessage() != null) &&
+                    cause.getMessage().equals("Connection reset by peer")) {
+                mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
+            } else {
+                cause.printStackTrace();
+            }
         }
     }
 
@@ -118,10 +140,8 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
             Constructor implConstructor = serviceInfo.getImplClassConstructor();
             assert implConstructor != null;
 
-            RpcServerChannel rpcServerChannel = new RpcServerChannel(mProtobufRpcServer, context.channel());
-
             try {
-                Object implObject = implConstructor.newInstance(rpcServerChannel);
+                Object implObject = implConstructor.newInstance(mRpcServerChannel);
                 mServiceImplementationObjectMap.put(serviceInfo.getImplClass(), implObject);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignore) {
             }
