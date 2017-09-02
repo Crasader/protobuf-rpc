@@ -4,7 +4,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.IdleStateHandler;
 import me.trinopoty.protobufRpc.codec.RpcMessageCodec;
+
+import java.util.concurrent.TimeUnit;
 
 final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel> {
 
@@ -14,16 +17,19 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
     private final SslContext mSslContext;
     private final boolean mEnableTrafficLogging;
     private final String mLoggingName;
+    private final boolean mKeepAlive;
 
     RpcClientChannelInitializer(
             Integer maxReceivePacketLength,
             SslContext sslContext,
             boolean enableTrafficLogging,
-            String loggingName) {
+            String loggingName,
+            boolean keepAlive) {
         mMaxReceivePacketLength = (maxReceivePacketLength != null)? maxReceivePacketLength : MAX_PACKET_LENGTH;
+        mSslContext = sslContext;
         mEnableTrafficLogging = enableTrafficLogging;
         mLoggingName = loggingName;
-        mSslContext = sslContext;
+        mKeepAlive = keepAlive;
     }
 
     @Override
@@ -40,6 +46,14 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
                 mEnableTrafficLogging,
                 mEnableTrafficLogging,
                 mLoggingName));
+        if(mKeepAlive) {
+            pipeline.addLast("keep-alive", new IdleStateHandler(
+                    true,
+                    5000,
+                    5000,
+                    5000,
+                    TimeUnit.MILLISECONDS));
+        }
         pipeline.addLast("handler", new RpcClientChannelHandler());
     }
 }

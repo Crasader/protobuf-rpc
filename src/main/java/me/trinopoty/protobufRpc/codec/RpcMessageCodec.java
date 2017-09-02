@@ -114,7 +114,8 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                     try {
                         WirePacketFormat.WirePacket wirePacket = WirePacketFormat.WirePacket.parseFrom(payloadBuffer);
 
-                        if(mEnableDecodeLogging) {
+                        if(mEnableDecodeLogging &&
+                                ((wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) || (wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR))) {
                             mLogger.info(String.format(
                                     "[RpcDecoder:%s] Received RPC call { serviceIdentifier: %d, methodIdentifier: %d }",
                                     mLoggingName,

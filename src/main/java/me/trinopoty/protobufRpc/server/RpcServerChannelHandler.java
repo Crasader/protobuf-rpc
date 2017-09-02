@@ -80,6 +80,8 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
                 throw new RuntimeException(String.format("Service with identifier %d is not registered", serviceIdentifier.getServiceIdentifier()));
             }
+        } else if(requestWirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_KEEP_ALIVE) {
+            sendKeepAlivePacket(ctx);
         }
     }
 
@@ -126,5 +128,15 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         return new Pair<>(serviceInfo, mServiceImplementationObjectMap.get(serviceInfo.getImplClass()));
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void sendKeepAlivePacket(ChannelHandlerContext ctx) {
+        WirePacketFormat.WirePacket.Builder builder = WirePacketFormat.WirePacket.newBuilder();
+        builder.setMessageIdentifier(0);
+        builder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_KEEP_ALIVE);
+
+        byte[] wirePacketBytes = builder.build().toByteArray();
+        ctx.writeAndFlush(wirePacketBytes);
     }
 }

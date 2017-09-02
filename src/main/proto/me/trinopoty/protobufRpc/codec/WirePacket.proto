@@ -9,6 +9,7 @@ enum MessageType {
     MESSAGE_TYPE_RESPONSE = 2;
     MESSAGE_TYPE_ERROR = 3;
     MESSAGE_TYPE_OOB = 4;
+    MESSAGE_TYPE_KEEP_ALIVE = 5;
 }
 
 message ServiceIdentifier {

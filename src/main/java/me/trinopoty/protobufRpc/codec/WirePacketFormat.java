@@ -39,6 +39,10 @@ public final class WirePacketFormat {
      * <code>MESSAGE_TYPE_OOB = 4;</code>
      */
     MESSAGE_TYPE_OOB(4),
+    /**
+     * <code>MESSAGE_TYPE_KEEP_ALIVE = 5;</code>
+     */
+    MESSAGE_TYPE_KEEP_ALIVE(5),
     UNRECOGNIZED(-1),
     ;
 
@@ -62,6 +66,10 @@ public final class WirePacketFormat {
      * <code>MESSAGE_TYPE_OOB = 4;</code>
      */
     public static final int MESSAGE_TYPE_OOB_VALUE = 4;
+    /**
+     * <code>MESSAGE_TYPE_KEEP_ALIVE = 5;</code>
+     */
+    public static final int MESSAGE_TYPE_KEEP_ALIVE_VALUE = 5;
 
 
     public final int getNumber() {
@@ -87,6 +95,7 @@ public final class WirePacketFormat {
         case 2: return MESSAGE_TYPE_RESPONSE;
         case 3: return MESSAGE_TYPE_ERROR;
         case 4: return MESSAGE_TYPE_OOB;
+        case 5: return MESSAGE_TYPE_KEEP_ALIVE;
         default: return null;
       }
     }
@@ -1949,11 +1958,12 @@ public final class WirePacketFormat {
       "ufRpc.codec.MessageType\022L\n\021serviceIdenti" +
       "fier\030\013 \001(\01321.me.trinopoty.protobufRpc.co" +
       "dec.ServiceIdentifier\022\017\n\007payload\030\020 \001(\014\"\037" +
-      "\n\014ErrorMessage\022\017\n\007message\030\001 \001(\t*\207\001\n\013Mess",
+      "\n\014ErrorMessage\022\017\n\007message\030\001 \001(\t*\244\001\n\013Mess",
       "ageType\022\025\n\021MESSAGE_TYPE_NONE\020\000\022\030\n\024MESSAG" +
       "E_TYPE_REQUEST\020\001\022\031\n\025MESSAGE_TYPE_RESPONS" +
       "E\020\002\022\026\n\022MESSAGE_TYPE_ERROR\020\003\022\024\n\020MESSAGE_T" +
-      "YPE_OOB\020\004B\022B\020WirePacketFormatb\006proto3"
+      "YPE_OOB\020\004\022\033\n\027MESSAGE_TYPE_KEEP_ALIVE\020\005B\022" +
+      "B\020WirePacketFormatb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

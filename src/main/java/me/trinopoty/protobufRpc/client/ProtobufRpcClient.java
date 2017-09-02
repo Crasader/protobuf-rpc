@@ -34,6 +34,7 @@ public final class ProtobufRpcClient {
 
         private Integer mMaxReceivePacketLength = null;
         private Long mDefaultReceiveTimeoutMillis = null;
+        private boolean mKeepAlive = false;
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
         private SslContext mSslContext = null;
@@ -62,6 +63,17 @@ public final class ProtobufRpcClient {
          */
         public Builder setDefaultReceiveTimeoutMillis(long defaultReceiveTimeoutMillis) {
             mDefaultReceiveTimeoutMillis = defaultReceiveTimeoutMillis;
+            return this;
+        }
+
+        /**
+         * Enables or disabled global keep-alive mechanism.
+         *
+         * @param keepAlive Value indicating whether keep-alive will be enabled or disabled.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
+         */
+        public Builder setKeepAlive(boolean keepAlive) {
+            mKeepAlive = keepAlive;
             return this;
         }
 
@@ -145,7 +157,7 @@ public final class ProtobufRpcClient {
                 throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
             }
 
-            ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mRpcServiceCollector, mDefaultReceiveTimeoutMillis);
+            ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mRpcServiceCollector, mDefaultReceiveTimeoutMillis, mKeepAlive);
 
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(acquireClientEventLoopGroup());
@@ -154,7 +166,8 @@ public final class ProtobufRpcClient {
                     mMaxReceivePacketLength,
                     null,
                     mEnableTrafficLogging,
-                    mLoggingName));
+                    mLoggingName,
+                    mKeepAlive));
             protobufRpcClient.setBootstrap(bootstrap);
 
             if(mSslContext != null) {
@@ -165,7 +178,8 @@ public final class ProtobufRpcClient {
                         mMaxReceivePacketLength,
                         mSslContext,
                         mEnableTrafficLogging,
-                        mLoggingName));
+                        mLoggingName,
+                        mKeepAlive));
                 protobufRpcClient.setSslBootstrap(sslBootstrap);
             }
 
@@ -175,13 +189,15 @@ public final class ProtobufRpcClient {
 
     private final RpcServiceCollector mRpcServiceCollector;
     private final Long mDefaultReceiveTimeoutMillis;
+    private final boolean mKeepAlive;
 
     private Bootstrap mBootstrap;
     private Bootstrap mSslBootstrap;
 
-    private ProtobufRpcClient(RpcServiceCollector rpcServiceCollector, Long defaultReceiveTimeoutMillis) {
+    private ProtobufRpcClient(RpcServiceCollector rpcServiceCollector, Long defaultReceiveTimeoutMillis, boolean keepAlive) {
         mRpcServiceCollector = rpcServiceCollector;
         mDefaultReceiveTimeoutMillis = defaultReceiveTimeoutMillis;
+        mKeepAlive = keepAlive;
     }
 
     @SuppressWarnings("Duplicates")
