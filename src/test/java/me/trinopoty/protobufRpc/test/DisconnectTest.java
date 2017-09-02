@@ -21,8 +21,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.SocketChannel;
 
+@SuppressWarnings({"JavaReflectionMemberAccess", "unchecked"})
 public final class DisconnectTest {
 
+    @SuppressWarnings("UnusedReturnValue")
     @RpcIdentifier(1)
     public interface EchoService {
 
