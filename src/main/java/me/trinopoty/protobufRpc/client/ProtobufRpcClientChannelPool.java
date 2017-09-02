@@ -45,6 +45,11 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
             mClientChannelPool.returnResource(this);
         }
 
+        @Override
+        public InetSocketAddress getRemoteAddress() {
+            return mRpcClientChannel.getRemoteAddress();
+        }
+
         void realClose() {
             mRpcClientChannel.close();
         }

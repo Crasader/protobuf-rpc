@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -143,6 +144,11 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
 
         mProxyMap.clear();
         mOobHandlerMap.clear();
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return (InetSocketAddress) mChannel.remoteAddress();
     }
 
     @Override

@@ -1,5 +1,7 @@
 package me.trinopoty.protobufRpc.client;
 
+import java.net.InetSocketAddress;
+
 public interface ProtobufRpcClientChannel extends AutoCloseable {
 
     /**
@@ -40,4 +42,11 @@ public interface ProtobufRpcClientChannel extends AutoCloseable {
      * Close the connection with the server.
      */
     void close();
+
+    /**
+     * Gets the remote address of this connection.
+     *
+     * @return The remote address of this connection.
+     */
+    InetSocketAddress getRemoteAddress();
 }

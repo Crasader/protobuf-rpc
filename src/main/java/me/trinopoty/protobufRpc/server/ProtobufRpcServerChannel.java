@@ -14,6 +14,7 @@ import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.InetSocketAddress;
 
 public final class ProtobufRpcServerChannel {
 
@@ -64,5 +65,9 @@ public final class ProtobufRpcServerChannel {
         } else {
             throw new IllegalArgumentException(String.format("Class<%s> not registered for OOB handling.", classOfService.getName()));
         }
+    }
+
+    public InetSocketAddress getRemoteAddress() {
+        return (InetSocketAddress) mChannel.remoteAddress();
     }
 }
