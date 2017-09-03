@@ -1,8 +1,11 @@
 package me.trinopoty.protobufRpc.server;
 
 import com.google.protobuf.AbstractMessage;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import me.trinopoty.protobufRpc.DisconnectReason;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
 import me.trinopoty.protobufRpc.util.Pair;
@@ -12,6 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
@@ -97,6 +101,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                 throw new RuntimeException(String.format("Service with identifier %d is not registered", serviceIdentifier.getServiceIdentifier()));
             }
         } else if(requestWirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_KEEP_ALIVE) {
+            initializeKeepAlive(ctx.channel());
             sendKeepAlivePacket(ctx);
         }
     }
@@ -111,6 +116,14 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
             } else {
                 cause.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if(evt instanceof IdleStateEvent) {
+            mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
+            ctx.channel().close().syncUninterruptibly();
         }
     }
 
@@ -148,6 +161,20 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         return new Pair<>(serviceInfo, mServiceImplementationObjectMap.get(serviceInfo.getImplClass()));
+    }
+
+    private void initializeKeepAlive(Channel channel) {
+        if(channel.pipeline().get("keep-alive") == null) {
+            channel.pipeline().addBefore(
+                    "handler",
+                    "keep-alive",
+                    new IdleStateHandler(
+                            true,
+                            0,
+                            0,
+                            10000,
+                            TimeUnit.MILLISECONDS));
+        }
     }
 
     @SuppressWarnings("Duplicates")

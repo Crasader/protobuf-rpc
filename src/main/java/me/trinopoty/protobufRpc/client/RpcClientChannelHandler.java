@@ -2,8 +2,11 @@ package me.trinopoty.protobufRpc.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
+
+import java.io.IOException;
 
 final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
 
@@ -28,7 +31,11 @@ final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if(evt instanceof IdleStateEvent) {
-            sendKeepAlivePacket(ctx);
+            if(((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE) {
+                sendKeepAlivePacket(ctx);
+            } else if(((IdleStateEvent) evt).state() == IdleState.READER_IDLE) {
+                mRpcClientChannel.channelException(new IOException("Connection reset by peer"));
+            }
         }
     }
 

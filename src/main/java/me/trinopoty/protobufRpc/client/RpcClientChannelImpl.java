@@ -140,10 +140,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
     @Override
     public void close() {
         mChannelDisconnectReason = DisconnectReason.CLIENT_CLOSE;
-        mChannel.close().syncUninterruptibly();
-
-        mProxyMap.clear();
-        mOobHandlerMap.clear();
+        realClose();
     }
 
     @Override
@@ -171,10 +168,18 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
                     (cause.getMessage() != null) &&
                     cause.getMessage().equals("Connection reset by peer")) {
                 mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
+                realClose();
             } else {
                 cause.printStackTrace();
             }
         }
+    }
+
+    private void realClose() {
+        mChannel.close().syncUninterruptibly();
+
+        mProxyMap.clear();
+        mOobHandlerMap.clear();
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
