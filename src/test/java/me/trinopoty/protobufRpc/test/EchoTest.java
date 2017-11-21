@@ -6,13 +6,13 @@ import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
-import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannel;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public final class EchoTest {
 
@@ -27,9 +27,6 @@ public final class EchoTest {
     }
 
     public static final class EchoServiceImpl implements EchoService {
-
-        public EchoServiceImpl(ProtobufRpcServerChannel rpcServerChannel) {
-        }
 
         @Override
         public Empty empty(Empty request) {
