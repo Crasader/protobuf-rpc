@@ -2,13 +2,7 @@ package me.trinopoty.protobufRpc.server;
 
 import com.google.protobuf.AbstractMessage;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
-import me.trinopoty.protobufRpc.exception.DuplicateRpcMethodIdentifierException;
-import me.trinopoty.protobufRpc.exception.DuplicateRpcServiceIdentifierException;
-import me.trinopoty.protobufRpc.exception.IllegalMethodSignatureException;
-import me.trinopoty.protobufRpc.exception.MissingRpcIdentifierException;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.lang.reflect.InvocationHandler;
@@ -16,6 +10,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 
+@SuppressWarnings("unused")
 public final class ProtobufRpcServerChannel {
 
     private final class OobInvocationHandler implements InvocationHandler {

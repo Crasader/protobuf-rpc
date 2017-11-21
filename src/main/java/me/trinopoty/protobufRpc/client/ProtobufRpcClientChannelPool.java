@@ -8,6 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProtobufRpcClientChannelPool implements Closeable {
 
     private static final class RpcClientChannelProxyImpl implements ProtobufRpcClientChannel {

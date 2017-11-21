@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import io.netty.handler.codec.TooLongFrameException;
+import me.trinopoty.protobufRpc.ProtobufRpcLog;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,9 +33,9 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
         mEnableDecodeLogging = enableDecodeLogging;
         mLoggingName = loggingName;
 
-        mLogger = (mEnableDecodeLogging || mEnableEncodeLogging)? LogManager.getLogger("NettyRpcLogger") : null;
+        mLogger = (mEnableDecodeLogging || mEnableEncodeLogging)? LogManager.getLogger(ProtobufRpcLog.CODEC) : null;
 
-        if((mLoggingName == null) && (mEnableEncodeLogging || mEnableDecodeLogging)) {
+        if((mLoggingName == null) && (mLogger != null)) {
             throw new IllegalArgumentException("Logging name not provided.");
         }
     }
@@ -44,11 +45,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
         byte[] messageBytes = wirePacket.toByteArray();
 
         if(mEnableEncodeLogging) {
-            mLogger.info(String.format(
-                    "[RpcEncoder:%s] Sending RPC call { serviceIdentifier: %d, methodIdentifier: %d }",
-                    mLoggingName,
-                    wirePacket.getServiceIdentifier().getServiceIdentifier(),
-                    wirePacket.getServiceIdentifier().getMethodIdentifier()));
+            logWireMessage(wirePacket);
         }
 
         byteBuf.writeInt(PACKET_SIGNATURE);
@@ -65,8 +62,10 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
     }
 
     private WirePacketFormat.WirePacket decode(ByteBuf byteBuf) {
+        //noinspection UnusedAssignment
         int readerIdx = byteBuf.readerIndex();
 
+        //noinspection ConstantConditions
         do {
             if(mDiscardLength > 0) {
                 if(mEnableDecodeLogging) {
@@ -114,13 +113,8 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                     try {
                         WirePacketFormat.WirePacket wirePacket = WirePacketFormat.WirePacket.parseFrom(payloadBuffer);
 
-                        if(mEnableDecodeLogging &&
-                                ((wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) || (wirePacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR))) {
-                            mLogger.info(String.format(
-                                    "[RpcDecoder:%s] Received RPC call { serviceIdentifier: %d, methodIdentifier: %d }",
-                                    mLoggingName,
-                                    wirePacket.getServiceIdentifier().getServiceIdentifier(),
-                                    wirePacket.getServiceIdentifier().getMethodIdentifier()));
+                        if(mEnableDecodeLogging) {
+                            logWireMessage(wirePacket);
                         }
 
                         return wirePacket;
@@ -135,6 +129,46 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
         byteBuf.readerIndex(readerIdx);
         return null;
+    }
+
+    private void logWireMessage(WirePacketFormat.WirePacket wirePacket) {
+        switch (wirePacket.getMessageType()) {
+            case MESSAGE_TYPE_KEEP_ALIVE:
+                mLogger.info(String.format(
+                        "[RpcEncoder:%s] Sending Keep-Alive",
+                        mLoggingName));
+                break;
+            case MESSAGE_TYPE_REQUEST:
+                mLogger.info(String.format(
+                        "[RpcEncoder:%s] Sending Request { serviceIdentifier: %d; methodIdentifier: %d; messageIdentifier: %d }",
+                        mLoggingName,
+                        wirePacket.getServiceIdentifier().getServiceIdentifier(),
+                        wirePacket.getServiceIdentifier().getMethodIdentifier(),
+                        wirePacket.getMessageIdentifier()));
+                break;
+            case MESSAGE_TYPE_RESPONSE:
+                mLogger.info(String.format(
+                        "[RpcEncoder:%s] Sending Response { serviceIdentifier: %d; methodIdentifier: %d; messageIdentifier: %d }",
+                        mLoggingName,
+                        wirePacket.getServiceIdentifier().getServiceIdentifier(),
+                        wirePacket.getServiceIdentifier().getMethodIdentifier(),
+                        wirePacket.getMessageIdentifier()));
+                break;
+            case MESSAGE_TYPE_OOB:
+                mLogger.info(String.format(
+                        "[RpcEncoder:%s] Sending OOB { serviceIdentifier: %d; methodIdentifier: %d }",
+                        mLoggingName,
+                        wirePacket.getServiceIdentifier().getServiceIdentifier(),
+                        wirePacket.getServiceIdentifier().getMethodIdentifier()));
+                break;
+            case MESSAGE_TYPE_ERROR:
+                mLogger.info(String.format(
+                        "[RpcEncoder:%s] Sending Error { serviceIdentifier: %d; methodIdentifier: %d }",
+                        mLoggingName,
+                        wirePacket.getServiceIdentifier().getServiceIdentifier(),
+                        wirePacket.getServiceIdentifier().getMethodIdentifier()));
+                break;
+        }
     }
 
     private static boolean findPacketSignature(ByteBuf byteBuf) {

@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The client side aspect of Protobuf-RPC.
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProtobufRpcClient {
 
     private static final Object sClientEventLoopLock = new Object();
@@ -157,7 +157,7 @@ public final class ProtobufRpcClient {
                 throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
             }
 
-            ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mRpcServiceCollector, mDefaultReceiveTimeoutMillis, mKeepAlive);
+            ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mRpcServiceCollector, mDefaultReceiveTimeoutMillis);
 
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(acquireClientEventLoopGroup());
@@ -189,15 +189,13 @@ public final class ProtobufRpcClient {
 
     private final RpcServiceCollector mRpcServiceCollector;
     private final Long mDefaultReceiveTimeoutMillis;
-    private final boolean mKeepAlive;
 
     private Bootstrap mBootstrap;
     private Bootstrap mSslBootstrap;
 
-    private ProtobufRpcClient(RpcServiceCollector rpcServiceCollector, Long defaultReceiveTimeoutMillis, boolean keepAlive) {
+    private ProtobufRpcClient(RpcServiceCollector rpcServiceCollector, Long defaultReceiveTimeoutMillis) {
         mRpcServiceCollector = rpcServiceCollector;
         mDefaultReceiveTimeoutMillis = defaultReceiveTimeoutMillis;
-        mKeepAlive = keepAlive;
     }
 
     @SuppressWarnings("Duplicates")

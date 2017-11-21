@@ -49,7 +49,7 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
         if(mKeepAlive) {
             pipeline.addLast("keep-alive", new IdleStateHandler(
                     true,
-                    5000,
+                    1000,
                     500,
                     0,
                     TimeUnit.MILLISECONDS));
