@@ -135,12 +135,12 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
         switch (wirePacket.getMessageType()) {
             case MESSAGE_TYPE_KEEP_ALIVE:
                 mLogger.info(String.format(
-                        "[RpcEncoder:%s] Sending Keep-Alive",
+                        "[RpcEncoder:%s] Keep-Alive",
                         mLoggingName));
                 break;
             case MESSAGE_TYPE_REQUEST:
                 mLogger.info(String.format(
-                        "[RpcEncoder:%s] Sending Request { serviceIdentifier: %d; methodIdentifier: %d; messageIdentifier: %d }",
+                        "[RpcEncoder:%s] Request { serviceIdentifier: %d; methodIdentifier: %d; messageIdentifier: %d }",
                         mLoggingName,
                         wirePacket.getServiceIdentifier().getServiceIdentifier(),
                         wirePacket.getServiceIdentifier().getMethodIdentifier(),
@@ -148,7 +148,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                 break;
             case MESSAGE_TYPE_RESPONSE:
                 mLogger.info(String.format(
-                        "[RpcEncoder:%s] Sending Response { serviceIdentifier: %d; methodIdentifier: %d; messageIdentifier: %d }",
+                        "[RpcEncoder:%s] Response { serviceIdentifier: %d; methodIdentifier: %d; messageIdentifier: %d }",
                         mLoggingName,
                         wirePacket.getServiceIdentifier().getServiceIdentifier(),
                         wirePacket.getServiceIdentifier().getMethodIdentifier(),
@@ -156,14 +156,14 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                 break;
             case MESSAGE_TYPE_OOB:
                 mLogger.info(String.format(
-                        "[RpcEncoder:%s] Sending OOB { serviceIdentifier: %d; methodIdentifier: %d }",
+                        "[RpcEncoder:%s] OOB { serviceIdentifier: %d; methodIdentifier: %d }",
                         mLoggingName,
                         wirePacket.getServiceIdentifier().getServiceIdentifier(),
                         wirePacket.getServiceIdentifier().getMethodIdentifier()));
                 break;
             case MESSAGE_TYPE_ERROR:
                 mLogger.info(String.format(
-                        "[RpcEncoder:%s] Sending Error { serviceIdentifier: %d; methodIdentifier: %d }",
+                        "[RpcEncoder:%s] Error { serviceIdentifier: %d; methodIdentifier: %d }",
                         mLoggingName,
                         wirePacket.getServiceIdentifier().getServiceIdentifier(),
                         wirePacket.getServiceIdentifier().getMethodIdentifier()));

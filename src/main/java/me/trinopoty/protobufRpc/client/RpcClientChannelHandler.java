@@ -48,8 +48,6 @@ final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
         WirePacketFormat.WirePacket.Builder builder = WirePacketFormat.WirePacket.newBuilder();
         builder.setMessageIdentifier(0);
         builder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_KEEP_ALIVE);
-
-        byte[] wirePacketBytes = builder.build().toByteArray();
-        ctx.writeAndFlush(wirePacketBytes);
+        ctx.writeAndFlush(builder.build());
     }
 }
