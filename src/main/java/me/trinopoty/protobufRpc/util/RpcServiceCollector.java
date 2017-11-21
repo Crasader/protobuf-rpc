@@ -6,9 +6,11 @@ import me.trinopoty.protobufRpc.exception.DuplicateRpcMethodIdentifierException;
 import me.trinopoty.protobufRpc.exception.DuplicateRpcServiceIdentifierException;
 import me.trinopoty.protobufRpc.exception.IllegalMethodSignatureException;
 import me.trinopoty.protobufRpc.exception.MissingRpcIdentifierException;
+import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannel;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,17 +57,22 @@ public final class RpcServiceCollector {
     @SuppressWarnings("WeakerAccess")
     public static final class RpcServiceInfo {
 
-        private Class mService;
+        public enum ConstructorType {
+            DEFAULT,
+            PARAMETERIZED
+        }
+
+        private Class mServiceClass;
         private boolean mIsOob;
         private int mServiceIdentifier;
         private Map<Method, RpcMethodInfo> mMethodMap;
         private Map<Integer, RpcMethodInfo> mMethodIdentifierMap;
 
         private Class mImplClass;
-        private Constructor mImplClassConstructor;
+        private Pair<ConstructorType, Constructor> mImplClassConstructor;
 
-        public Class getService() {
-            return mService;
+        public Class getServiceClass() {
+            return mServiceClass;
         }
 
         public boolean isOob() {
@@ -92,12 +99,29 @@ public final class RpcServiceCollector {
             mImplClass = implClass;
         }
 
-        public Constructor getImplClassConstructor() {
-            return mImplClassConstructor;
+        public void setImplClassConstructor(Pair<ConstructorType, Constructor> implClassConstructor) {
+            mImplClassConstructor = implClassConstructor;
         }
 
-        public void setImplClassConstructor(Constructor implClassConstructor) {
-            mImplClassConstructor = implClassConstructor;
+        public Object createImplClassObject(ProtobufRpcServerChannel rpcServerChannel) {
+            if(mImplClassConstructor != null) {
+                Object implObject = null;
+                try {
+                    switch (mImplClassConstructor.getKey()) {
+                        case DEFAULT:
+                            implObject = mImplClassConstructor.getValue().newInstance();
+                            break;
+                        case PARAMETERIZED:
+                            implObject = mImplClassConstructor.getValue().newInstance(rpcServerChannel);
+                            break;
+                    }
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                    throw new RuntimeException("Unable to create service implementation object.", ex);
+                }
+                return implObject;
+            } else {
+                throw new IllegalStateException("Implementation class is not set for service interface " + mServiceClass.getName());
+            }
         }
     }
 
@@ -110,7 +134,7 @@ public final class RpcServiceCollector {
             RpcServiceInfo rpcServiceInfo = parseServiceClass(classOfService, isOob);
 
             mServiceIdentifierList.add(rpcServiceInfo.getServiceIdentifier());
-            mServiceIdentifierClassMap.put(rpcServiceInfo.getServiceIdentifier(), rpcServiceInfo.getService());
+            mServiceIdentifierClassMap.put(rpcServiceInfo.getServiceIdentifier(), rpcServiceInfo.getServiceClass());
             mServiceInfoMap.put(classOfService, rpcServiceInfo);
         }
     }
@@ -129,82 +153,80 @@ public final class RpcServiceCollector {
     private synchronized RpcServiceInfo parseServiceClass(Class classOfService, boolean isOob) throws MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, DuplicateRpcMethodIdentifierException, IllegalMethodSignatureException {
         RpcServiceInfo rpcServiceInfo = new RpcServiceInfo();
 
-        do {
-            if(!classOfService.isInterface()) {
-                throw new IllegalArgumentException(String.format("Class<%s> is not an interface.", classOfService.getName()));
-            }
+        if(!classOfService.isInterface()) {
+            throw new IllegalArgumentException(String.format("Class<%s> is not an interface.", classOfService.getName()));
+        }
 
-            rpcServiceInfo.mService = classOfService;
+        rpcServiceInfo.mServiceClass = classOfService;
 
-            Annotation rpcIdentifierAnnotation;
-            rpcIdentifierAnnotation = classOfService.getAnnotation(RpcIdentifier.class);
+        Annotation rpcIdentifierAnnotation;
+        rpcIdentifierAnnotation = classOfService.getAnnotation(RpcIdentifier.class);
+        if(rpcIdentifierAnnotation == null) {
+            throw new MissingRpcIdentifierException(String.format("Class<%s> does not contain @RpcIdentifier annotation.", classOfService.getName()));
+        }
+
+        rpcServiceInfo.mIsOob = isOob;
+
+        rpcServiceInfo.mServiceIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).value();
+        if(mServiceIdentifierList.contains(rpcServiceInfo.mServiceIdentifier)) {
+            throw new DuplicateRpcServiceIdentifierException(String.format("Class<%s> contains duplicate @RpcIdentifier value. Duplicate class: %s", classOfService.getName(), mServiceIdentifierClassMap.get(rpcServiceInfo.mServiceIdentifier).getName()));
+        }
+
+        HashSet<Integer> methodIdentifierList = new HashSet<>();
+        HashMap<Method, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
+        HashMap<Integer, RpcMethodInfo> rpcMethodInfoIdentifierMap = new HashMap<>();
+        for(Method method : classOfService.getDeclaredMethods()) {
+            RpcMethodInfo rpcMethodInfo = new RpcMethodInfo();
+            rpcMethodInfo.mMethod = method;
+
+            rpcIdentifierAnnotation = method.getAnnotation(RpcIdentifier.class);
             if(rpcIdentifierAnnotation == null) {
-                throw new MissingRpcIdentifierException(String.format("Class<%s> does not contain @RpcIdentifier annotation.", classOfService.getName()));
+                throw new MissingRpcIdentifierException(String.format("Class<%s>.%s does not contain @RpcIdentifier annotation.", classOfService.getName(), method.getName()));
             }
 
-            rpcServiceInfo.mIsOob = isOob;
-
-            rpcServiceInfo.mServiceIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).value();
-            if(mServiceIdentifierList.contains(rpcServiceInfo.mServiceIdentifier)) {
-                throw new DuplicateRpcServiceIdentifierException(String.format("Class<%s> contains duplicate @RpcIdentifier value. Duplicate class: %s", classOfService.getName(), mServiceIdentifierClassMap.get(rpcServiceInfo.mServiceIdentifier).getName()));
+            rpcMethodInfo.mMethodIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).value();
+            if(methodIdentifierList.contains(rpcMethodInfo.mMethodIdentifier)) {
+                throw new DuplicateRpcMethodIdentifierException(String.format("Class<%s>.%s contains duplicate @RpcIdentifier value.", classOfService.getName(), method.getName()));
+            } else {
+                methodIdentifierList.add(rpcMethodInfo.mMethodIdentifier);
             }
 
-            HashSet<Integer> methodIdentifierList = new HashSet<>();
-            HashMap<Method, RpcMethodInfo> rpcMethodInfoMap = new HashMap<>();
-            HashMap<Integer, RpcMethodInfo> rpcMethodInfoIdentifierMap = new HashMap<>();
-            for(Method method : classOfService.getDeclaredMethods()) {
-                RpcMethodInfo rpcMethodInfo = new RpcMethodInfo();
-                rpcMethodInfo.mMethod = method;
+            if((method.getParameterTypes().length != 1) || !AbstractMessage.class.isAssignableFrom(method.getParameterTypes()[0])) {
+                throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not accept a protobuf message as parameter.", classOfService.getName(), method.getName()));
+            }
 
-                rpcIdentifierAnnotation = method.getAnnotation(RpcIdentifier.class);
-                if(rpcIdentifierAnnotation == null) {
-                    throw new MissingRpcIdentifierException(String.format("Class<%s>.%s does not contain @RpcIdentifier annotation.", classOfService.getName(), method.getName()));
-                }
+            //noinspection unchecked
+            rpcMethodInfo.mRequestMessageType = (Class<? extends AbstractMessage>) method.getParameterTypes()[0];
+            rpcMethodInfo.mRequestMessageParser = getProtobufParserMethod(rpcMethodInfo.mRequestMessageType);
+            assert rpcMethodInfo.mRequestMessageParser != null;
 
-                rpcMethodInfo.mMethodIdentifier = ((RpcIdentifier) rpcIdentifierAnnotation).value();
-                if(methodIdentifierList.contains(rpcMethodInfo.mMethodIdentifier)) {
-                    throw new DuplicateRpcMethodIdentifierException(String.format("Class<%s>.%s contains duplicate @RpcIdentifier value.", classOfService.getName(), method.getName()));
-                } else {
-                    methodIdentifierList.add(rpcMethodInfo.mMethodIdentifier);
-                }
-
-                if((method.getParameterTypes().length != 1) || !AbstractMessage.class.isAssignableFrom(method.getParameterTypes()[0])) {
-                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not accept a protobuf message as parameter.", classOfService.getName(), method.getName()));
+            if(!isOob) {
+                Class responseType = method.getReturnType();
+                if(!AbstractMessage.class.isAssignableFrom(responseType)) {
+                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return a protobuf message.", classOfService.getName(), method.getName()));
                 }
 
                 //noinspection unchecked
-                rpcMethodInfo.mRequestMessageType = (Class<? extends AbstractMessage>) method.getParameterTypes()[0];
-                rpcMethodInfo.mRequestMessageParser = getProtobufParserMethod(rpcMethodInfo.mRequestMessageType);
-                assert rpcMethodInfo.mRequestMessageParser != null;
+                rpcMethodInfo.mResponseMessageType = responseType;
+                rpcMethodInfo.mResponseMessageParser = getProtobufParserMethod(rpcMethodInfo.mResponseMessageType);
 
-                if(!isOob) {
-                    Class responseType = method.getReturnType();
-                    if(!AbstractMessage.class.isAssignableFrom(responseType)) {
-                        throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return a protobuf message.", classOfService.getName(), method.getName()));
-                    }
-
-                    //noinspection unchecked
-                    rpcMethodInfo.mResponseMessageType = responseType;
-                    rpcMethodInfo.mResponseMessageParser = getProtobufParserMethod(rpcMethodInfo.mResponseMessageType);
-
-                    assert rpcMethodInfo.mResponseMessageParser != null;
-                } else {
-                    Class responseType = method.getReturnType();
-                    if(!responseType.equals(void.class)) {
-                        throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return void.", classOfService.getName(), method.getName()));
-                    }
-
-                    //noinspection unchecked
-                    rpcMethodInfo.mResponseMessageType = responseType;
+                assert rpcMethodInfo.mResponseMessageParser != null;
+            } else {
+                Class responseType = method.getReturnType();
+                if(!responseType.equals(void.class)) {
+                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return void.", classOfService.getName(), method.getName()));
                 }
 
-                rpcMethodInfoMap.put(method, rpcMethodInfo);
-                rpcMethodInfoIdentifierMap.put(rpcMethodInfo.mMethodIdentifier, rpcMethodInfo);
+                //noinspection unchecked
+                rpcMethodInfo.mResponseMessageType = responseType;
             }
 
-            rpcServiceInfo.mMethodMap = Collections.unmodifiableMap(rpcMethodInfoMap);
-            rpcServiceInfo.mMethodIdentifierMap = Collections.unmodifiableMap(rpcMethodInfoIdentifierMap);
-        } while (false);
+            rpcMethodInfoMap.put(method, rpcMethodInfo);
+            rpcMethodInfoIdentifierMap.put(rpcMethodInfo.mMethodIdentifier, rpcMethodInfo);
+        }
+
+        rpcServiceInfo.mMethodMap = Collections.unmodifiableMap(rpcMethodInfoMap);
+        rpcServiceInfo.mMethodIdentifierMap = Collections.unmodifiableMap(rpcMethodInfoIdentifierMap);
 
         return rpcServiceInfo;
     }

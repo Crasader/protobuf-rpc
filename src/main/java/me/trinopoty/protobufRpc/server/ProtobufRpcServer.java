@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import me.trinopoty.protobufRpc.DisconnectReason;
 import me.trinopoty.protobufRpc.exception.*;
+import me.trinopoty.protobufRpc.util.Pair;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.lang.reflect.Constructor;
@@ -231,17 +232,35 @@ public final class ProtobufRpcServer {
             return protobufRpcServer;
         }
 
-        private static Constructor getServiceImplementationConstructor(Class implClass) throws ServiceConstructorNotFoundException {
-            try {
-                @SuppressWarnings("unchecked") Constructor constructor = implClass.getDeclaredConstructor(ProtobufRpcServerChannel.class);
-                if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
-                    throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
-                }
+        private static Pair<RpcServiceCollector.RpcServiceInfo.ConstructorType, Constructor> getServiceImplementationConstructor(Class implClass) throws ServiceConstructorNotFoundException {
+            RpcServiceCollector.RpcServiceInfo.ConstructorType constructorType = null;
+            Constructor constructor = null;
 
-                return constructor;
-            } catch (NoSuchMethodException ex) {
+            try {
+                //noinspection unchecked
+                constructor = implClass.getDeclaredConstructor(ProtobufRpcServerChannel.class);
+                constructorType = RpcServiceCollector.RpcServiceInfo.ConstructorType.PARAMETERIZED;
+            } catch (NoSuchMethodException ignore) {
+            }
+
+            if(constructor == null) {
+                try {
+                    //noinspection unchecked
+                    constructor = implClass.getDeclaredConstructor();
+                    constructorType = RpcServiceCollector.RpcServiceInfo.ConstructorType.DEFAULT;
+                } catch (NoSuchMethodException ignore) {
+                }
+            }
+
+            if(constructor == null) {
                 throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
             }
+
+            if((constructor.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
+                throw new ServiceConstructorNotFoundException(String.format("Class<%s> does not have a valid constructor.", implClass.getName()));
+            }
+
+            return new Pair<>(constructorType, constructor);
         }
     }
 

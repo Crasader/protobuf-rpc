@@ -12,7 +12,6 @@ import me.trinopoty.protobufRpc.util.Pair;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -85,7 +84,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         ctx.writeAndFlush(builder.build());
     }
 
-    private synchronized Pair<RpcServiceCollector.RpcServiceInfo, Object> getServiceImplementationObject(ChannelHandlerContext context, int serviceIdentifier) {
+    private synchronized Pair<RpcServiceCollector.RpcServiceInfo, Object> getServiceImplementationObject(int serviceIdentifier) {
         RpcServiceCollector.RpcServiceInfo serviceInfo = mProtobufRpcServer.getRpcServiceCollector().getServiceInfo(serviceIdentifier);
         if(serviceInfo == null) {
             return null;
@@ -96,14 +95,8 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         if(!mServiceImplementationObjectMap.containsKey(serviceInfo.getImplClass())) {
-            Constructor implConstructor = serviceInfo.getImplClassConstructor();
-            assert implConstructor != null;
-
-            try {
-                Object implObject = implConstructor.newInstance(mRpcServerChannel);
-                mServiceImplementationObjectMap.put(serviceInfo.getImplClass(), implObject);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignore) {
-            }
+            Object implObject = serviceInfo.createImplClassObject(mRpcServerChannel);
+            mServiceImplementationObjectMap.put(serviceInfo.getImplClass(), implObject);
         }
 
         return new Pair<>(serviceInfo, mServiceImplementationObjectMap.get(serviceInfo.getImplClass()));
@@ -112,7 +105,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     private void handleIncomingRequest(ChannelHandlerContext ctx, WirePacketFormat.WirePacket requestWirePacket) throws Exception {
         WirePacketFormat.ServiceIdentifier serviceIdentifier = requestWirePacket.getServiceIdentifier();
 
-        Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(ctx, serviceIdentifier.getServiceIdentifier());
+        Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(serviceIdentifier.getServiceIdentifier());
         if(serviceInfoObjectPair != null) {
             RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getKey();
             RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
@@ -154,12 +147,12 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                 } else {
                     sendError(ctx, requestWirePacket, "Internal server error.");
 
-                    throw new RuntimeException(String.format("Unable to create implementation object of %s class", rpcServiceInfo.getService().getName()));
+                    throw new RuntimeException(String.format("Unable to create implementation object of %s class", rpcServiceInfo.getServiceClass().getName()));
                 }
             } else {
                 sendError(ctx, requestWirePacket, "Internal server error.");
 
-                throw new RuntimeException(String.format("Service class %s does not contain method with identifier %d", rpcServiceInfo.getService().getName(), serviceIdentifier.getMethodIdentifier()));
+                throw new RuntimeException(String.format("Service class %s does not contain method with identifier %d", rpcServiceInfo.getServiceClass().getName(), serviceIdentifier.getMethodIdentifier()));
             }
         } else {
             sendError(ctx, requestWirePacket, "Internal server error.");

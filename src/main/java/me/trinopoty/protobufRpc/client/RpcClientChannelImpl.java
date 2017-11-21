@@ -220,7 +220,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
 
         if(((serviceInfo = mProtobufRpcClient.getRpcServiceCollector().getServiceInfo(serviceIdentifier.getServiceIdentifier())) != null) &&
                 ((methodInfo = serviceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier())) != null) &&
-                ((oobHandler = mOobHandlerMap.get(serviceInfo.getService())) != null)) {
+                ((oobHandler = mOobHandlerMap.get(serviceInfo.getServiceClass())) != null)) {
             try {
                 AbstractMessage requestMessage = (AbstractMessage) methodInfo.getRequestMessageParser().invoke(null, (Object) wirePacket.getPayload().toByteArray());
                 methodInfo.getMethod().invoke(oobHandler, requestMessage);
