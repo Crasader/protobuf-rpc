@@ -79,12 +79,16 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
             readerIdx = byteBuf.readerIndex();
 
-            final boolean signatureFound = findPacketSignature(byteBuf);
+            boolean signatureFound = findPacketSignature(byteBuf);
 
             if(signatureFound) {
                 byteBuf.discardReadBytes();
                 readerIdx = byteBuf.readerIndex();
 
+                signatureFound = (byteBuf.readableBytes() > 8);
+            }
+
+            if(signatureFound) {
                 byteBuf.readInt();  // Read the signature
 
                 final int payloadLength = byteBuf.readInt();
