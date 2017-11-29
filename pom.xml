@@ -6,7 +6,7 @@
 
     <groupId>me.trinopoty</groupId>
     <artifactId>protobuf-rpc</artifactId>
-    <version>v0.4.7</version>
+    <version>v0.4.8</version>
 
     <name>Protobuf RPC</name>
     <organization>
@@ -28,6 +28,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -40,6 +41,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.0-M1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
