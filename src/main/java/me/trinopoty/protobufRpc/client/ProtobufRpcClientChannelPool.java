@@ -1,12 +1,16 @@
 package me.trinopoty.protobufRpc.client;
 
+import me.trinopoty.protobufRpc.ProtobufRpcLog;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProtobufRpcClientChannelPool implements Closeable {
@@ -91,10 +95,25 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
         }
     }
 
+    private final Logger mLogger;
+    private final AtomicLong mBorrowedObjectCount;
+
     private GenericObjectPool<ProtobufRpcClientChannel> mClientChannelPool;
 
     ProtobufRpcClientChannelPool(RpcClientChannelPoolConfig poolConfig, ProtobufRpcClient protobufRpcClient, InetSocketAddress remoteAddress, boolean ssl) {
         mClientChannelPool = new GenericObjectPool<>(new ClientChannelFactory(protobufRpcClient, remoteAddress, ssl), poolConfig);
+
+        if(poolConfig.isLoggingEnabled()) {
+            mLogger = LogManager.getLogger(ProtobufRpcLog.CLIENT_POOL);
+            mBorrowedObjectCount = new AtomicLong(0);
+        } else {
+            mLogger = null;
+            mBorrowedObjectCount = null;
+        }
+
+        if(mLogger != null) {
+            mLogger.debug("[" + System.identityHashCode(true) + ", Init] connected to { " + remoteAddress.getHostName() + ":" + remoteAddress.getPort() + " }");
+        }
     }
 
     @Override
@@ -109,7 +128,11 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
      */
     public ProtobufRpcClientChannel getResource() {
         try {
-            return mClientChannelPool.borrowObject();
+            ProtobufRpcClientChannel result = mClientChannelPool.borrowObject();
+            if(mLogger != null) {
+                mLogger.debug("[" + System.identityHashCode(true) + ", Borrow] borrow count: " + mBorrowedObjectCount.incrementAndGet());
+            }
+            return result;
         } catch(Exception ex) {
             ex.printStackTrace();
             return null;
@@ -122,6 +145,9 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
      * @param clientChannel The instance to return.
      */
     public void returnResource(ProtobufRpcClientChannel clientChannel) {
+        if(mLogger != null) {
+            mLogger.debug("[" + System.identityHashCode(true) + ", Return] borrow count: " + mBorrowedObjectCount.decrementAndGet());
+        }
         mClientChannelPool.returnObject(clientChannel);
     }
 }
