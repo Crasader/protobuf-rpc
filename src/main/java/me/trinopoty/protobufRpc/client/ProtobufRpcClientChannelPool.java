@@ -165,6 +165,13 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
         if(mLogger != null) {
             mLogger.debug("[ProtobufRpc Pool, " + mLogTag + ", Return] { borrowCount: " + mBorrowedObjectCount.decrementAndGet() + " }");
         }
-        mClientChannelPool.returnObject(clientChannel);
+        if(clientChannel.isActive()) {
+            mClientChannelPool.returnObject(clientChannel);
+        } else {
+            try {
+                mClientChannelPool.invalidateObject(clientChannel);
+            } catch (Exception ignore) {
+            }
+        }
     }
 }
