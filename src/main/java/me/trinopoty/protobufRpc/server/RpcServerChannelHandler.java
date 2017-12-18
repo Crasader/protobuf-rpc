@@ -31,12 +31,12 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         mRpcServerChannel = new ProtobufRpcServerChannel(mProtobufRpcServer, ctx.channel());
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         mProtobufRpcServer.sendChannelDisconnectEvent(mRpcServerChannel, mChannelDisconnectReason);
         mChannelDisconnectReason = DisconnectReason.CLIENT_CLOSE;
     }
@@ -52,11 +52,9 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if(cause != null) {
-            if ((cause instanceof IOException) &&
-                    (cause.getMessage() != null) &&
-                    cause.getMessage().equals("Connection reset by peer")) {
+            if (cause instanceof IOException) {
                 mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
             } else {
                 cause.printStackTrace();
@@ -65,14 +63,14 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         if(evt instanceof IdleStateEvent) {
             mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
             ctx.channel().close().syncUninterruptibly();
         }
     }
 
-    private void sendError(ChannelHandlerContext ctx, WirePacketFormat.WirePacket requestPacket, String message) throws Exception {
+    private void sendError(ChannelHandlerContext ctx, WirePacketFormat.WirePacket requestPacket, String message) {
         WirePacketFormat.WirePacket.Builder builder = WirePacketFormat.WirePacket.newBuilder();
         builder.setMessageIdentifier(requestPacket.getMessageIdentifier());
         builder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR);

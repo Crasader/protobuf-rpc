@@ -13,28 +13,30 @@ final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
     private RpcClientChannelImpl mRpcClientChannel;
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         assert mRpcClientChannel != null;
 
-        if (((WirePacketFormat.WirePacket) msg).getMessageType() != WirePacketFormat.MessageType.MESSAGE_TYPE_KEEP_ALIVE) {
+        WirePacketFormat.WirePacket wirePacket = (WirePacketFormat.WirePacket) msg;
+
+        if (wirePacket.getMessageType() != WirePacketFormat.MessageType.MESSAGE_TYPE_KEEP_ALIVE) {
             mRpcClientChannel.receivedRpcPacket((WirePacketFormat.WirePacket) msg);
         }
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if(mRpcClientChannel != null) {
             mRpcClientChannel.channelException(cause);
         }
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         if(evt instanceof IdleStateEvent) {
             if(((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE) {
                 sendKeepAlivePacket(ctx);
             } else if(((IdleStateEvent) evt).state() == IdleState.READER_IDLE) {
-                mRpcClientChannel.channelException(new IOException("Connection reset by peer"));
+                mRpcClientChannel.channelException(new IOException("Reader idle"));
             }
         }
     }

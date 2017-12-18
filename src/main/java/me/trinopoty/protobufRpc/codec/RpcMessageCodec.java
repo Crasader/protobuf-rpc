@@ -41,7 +41,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
     }
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, WirePacketFormat.WirePacket wirePacket, ByteBuf byteBuf) throws Exception {
+    protected void encode(ChannelHandlerContext channelHandlerContext, WirePacketFormat.WirePacket wirePacket, ByteBuf byteBuf) {
         byte[] messageBytes = wirePacket.toByteArray();
 
         if(mEnableEncodeLogging) {
@@ -54,7 +54,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
     }
 
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
+    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         WirePacketFormat.WirePacket wirePacket = decode(byteBuf);
         if(wirePacket != null) {
             list.add(wirePacket);
