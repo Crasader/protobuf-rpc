@@ -35,7 +35,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if(!isActive()) {
+            if(!RpcClientChannelImpl.this.isActive()) {
                 throw new RpcCallException("Channel is not active.");
             }
 
@@ -149,7 +149,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
     }
 
     @Override
-    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+    public void operationComplete(ChannelFuture channelFuture) {
         sendChannelDisconnectEvent(mChannelDisconnectReason);
         mChannelDisconnectReason = DisconnectReason.SERVER_CLOSE;
     }
@@ -164,9 +164,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
 
     void channelException(Throwable cause) {
         if(cause != null) {
-            if((cause instanceof IOException) &&
-                    (cause.getMessage() != null) &&
-                    cause.getMessage().equals("Connection reset by peer")) {
+            if(cause instanceof IOException) {
                 mChannelDisconnectReason = DisconnectReason.NETWORK_ERROR;
                 realClose();
             } else {
@@ -176,7 +174,10 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
     }
 
     private void realClose() {
-        mChannel.close().syncUninterruptibly();
+        try {
+            mChannel.close().syncUninterruptibly();
+        } catch (Throwable ignore) {
+        }
 
         mProxyMap.clear();
         mOobHandlerMap.clear();

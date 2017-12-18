@@ -9,11 +9,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProtobufRpcClientChannelPool implements Closeable {
+
+    private static final int BORROW_RETRY_COUNT = 5;
 
     private static final class RpcClientChannelProxyImpl implements ProtobufRpcClientChannel {
 
@@ -73,7 +76,7 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
         }
 
         @Override
-        public ProtobufRpcClientChannel create() throws Exception {
+        public ProtobufRpcClientChannel create() {
             return new RpcClientChannelProxyImpl(
                     ProtobufRpcClientChannelPool.this,
                     mProtobufRpcClient.getClientChannel(mRemoteAddress, mSsl));
@@ -85,7 +88,7 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
         }
 
         @Override
-        public void destroyObject(PooledObject<ProtobufRpcClientChannel> p) throws Exception {
+        public void destroyObject(PooledObject<ProtobufRpcClientChannel> p) {
             ((RpcClientChannelProxyImpl) p.getObject()).realClose();
         }
 
@@ -132,28 +135,41 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
      *
      * @return An instance of {@link ProtobufRpcClientChannel} for communicating with server.
      */
-    public ProtobufRpcClientChannel getResource() {
+    public ProtobufRpcClientChannel getResource() throws IOException {
+        ProtobufRpcClientChannel result = null;
+
         try {
-            ProtobufRpcClientChannel result = mClientChannelPool.borrowObject();
-            if(mLogger != null) {
-                String additionalData = null;
-                if(mLogCallingMethod) {
-                    @SuppressWarnings("ThrowableNotThrown") StackTraceElement[] stackTraceElementList = (new Throwable()).getStackTrace();
-                    StackTraceElement callingMethod = (stackTraceElementList.length > 1)? stackTraceElementList[1] : null;
-                    if(callingMethod != null) {
-                        additionalData = "calledFrom: { class: " + callingMethod.getClassName() +
-                                ", method: " + callingMethod.getMethodName() +
-                                ", file: " + callingMethod.getFileName() +
-                                ", line: " + callingMethod.getLineNumber() + " }";
-                    }
+            int thisRetryCount = 0;
+            do {
+                result = mClientChannelPool.borrowObject();
+                if(!result.isActive()) {
+                    mClientChannelPool.invalidateObject(result);
+                    result = null;
+                    thisRetryCount += 1;
                 }
-                mLogger.debug("[ProtobufRpc Pool, " + mLogTag + ", Borrow] { borrowCount: " + mBorrowedObjectCount.incrementAndGet() + ((additionalData != null)? ", " + additionalData : "") + " }");
-            }
-            return result;
-        } catch(Exception ex) {
-            ex.printStackTrace();
-            return null;
+            } while ((result == null) && (thisRetryCount < BORROW_RETRY_COUNT));
+        } catch (Exception ignore) {
         }
+
+        if(result == null) {
+            throw new IOException("Unable to borrow channel resource.");
+        }
+
+        if(mLogger != null) {
+            String additionalData = null;
+            if(mLogCallingMethod) {
+                @SuppressWarnings("ThrowableNotThrown") StackTraceElement[] stackTraceElementList = (new Throwable()).getStackTrace();
+                StackTraceElement callingMethod = (stackTraceElementList.length > 1)? stackTraceElementList[1] : null;
+                if(callingMethod != null) {
+                    additionalData = "calledFrom: { class: " + callingMethod.getClassName() +
+                            ", method: " + callingMethod.getMethodName() +
+                            ", file: " + callingMethod.getFileName() +
+                            ", line: " + callingMethod.getLineNumber() + " }";
+                }
+            }
+            mLogger.debug("[ProtobufRpc Pool, " + mLogTag + ", Borrow] { borrowCount: " + mBorrowedObjectCount.incrementAndGet() + ((additionalData != null)? ", " + additionalData : "") + " }");
+        }
+        return result;
     }
 
     /**
@@ -165,6 +181,7 @@ public final class ProtobufRpcClientChannelPool implements Closeable {
         if(mLogger != null) {
             mLogger.debug("[ProtobufRpc Pool, " + mLogTag + ", Return] { borrowCount: " + mBorrowedObjectCount.decrementAndGet() + " }");
         }
+
         if(clientChannel.isActive()) {
             mClientChannelPool.returnObject(clientChannel);
         } else {
