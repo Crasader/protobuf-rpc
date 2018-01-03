@@ -2,19 +2,19 @@ package me.trinopoty.protobufRpc.util;
 
 public final class Pair<K, V> {
 
-    private final K mKey;
-    private final V mValue;
+    private final K mFirst;
+    private final V mSecond;
 
-    public Pair(K key, V value) {
-        mKey = key;
-        mValue = value;
+    public Pair(K first, V second) {
+        mFirst = first;
+        mSecond = second;
     }
 
-    public K getKey() {
-        return mKey;
+    public K getFirst() {
+        return mFirst;
     }
 
-    public V getValue() {
-        return mValue;
+    public V getSecond() {
+        return mSecond;
     }
 }

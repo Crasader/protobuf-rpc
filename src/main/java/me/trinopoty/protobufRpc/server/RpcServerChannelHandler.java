@@ -105,9 +105,9 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
         Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(serviceIdentifier.getServiceIdentifier());
         if(serviceInfoObjectPair != null) {
-            RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getKey();
+            RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getFirst();
             RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
-            Object implObject = serviceInfoObjectPair.getValue();
+            Object implObject = serviceInfoObjectPair.getSecond();
 
             if(methodInfo != null) {
                 if(implObject != null) {

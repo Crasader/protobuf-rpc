@@ -19,7 +19,7 @@ import java.util.Map;
 
 public final class RpcServiceCollector {
 
-    @SuppressWarnings({"WeakerAccess", "unused"})
+    @SuppressWarnings("unused")
     public static final class RpcMethodInfo {
 
         private Method mMethod;
@@ -54,7 +54,6 @@ public final class RpcServiceCollector {
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static final class RpcServiceInfo {
 
         public enum ConstructorType {
@@ -63,20 +62,16 @@ public final class RpcServiceCollector {
         }
 
         private Class mServiceClass;
-        private boolean mIsOob;
         private int mServiceIdentifier;
         private Map<Method, RpcMethodInfo> mMethodMap;
         private Map<Integer, RpcMethodInfo> mMethodIdentifierMap;
+        private boolean mIsOob;
 
         private Class mImplClass;
         private Pair<ConstructorType, Constructor> mImplClassConstructor;
 
         public Class getServiceClass() {
             return mServiceClass;
-        }
-
-        public boolean isOob() {
-            return mIsOob;
         }
 
         public int getServiceIdentifier() {
@@ -89,6 +84,10 @@ public final class RpcServiceCollector {
 
         public Map<Integer, RpcMethodInfo> getMethodIdentifierMap() {
             return mMethodIdentifierMap;
+        }
+
+        public boolean isOob() {
+            return mIsOob;
         }
 
         public Class getImplClass() {
@@ -107,12 +106,12 @@ public final class RpcServiceCollector {
             if(mImplClassConstructor != null) {
                 Object implObject = null;
                 try {
-                    switch (mImplClassConstructor.getKey()) {
+                    switch (mImplClassConstructor.getFirst()) {
                         case DEFAULT:
-                            implObject = mImplClassConstructor.getValue().newInstance();
+                            implObject = mImplClassConstructor.getSecond().newInstance();
                             break;
                         case PARAMETERIZED:
-                            implObject = mImplClassConstructor.getValue().newInstance(rpcServerChannel);
+                            implObject = mImplClassConstructor.getSecond().newInstance(rpcServerChannel);
                             break;
                     }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
