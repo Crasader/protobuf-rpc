@@ -101,62 +101,69 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void handleIncomingRequest(ChannelHandlerContext ctx, WirePacketFormat.WirePacket requestWirePacket) throws Exception {
-        WirePacketFormat.ServiceIdentifier serviceIdentifier = requestWirePacket.getServiceIdentifier();
+        do {
+            final WirePacketFormat.ServiceIdentifier serviceIdentifier = requestWirePacket.getServiceIdentifier();
+            if(serviceIdentifier == null) {
+                sendError(ctx, requestWirePacket, "Client error.");
 
-        Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(serviceIdentifier.getServiceIdentifier());
-        if(serviceInfoObjectPair != null) {
-            RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getFirst();
-            RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
-            Object implObject = serviceInfoObjectPair.getSecond();
+                throw new RuntimeException("Service with identifier is missing");
+            }
 
-            if(methodInfo != null) {
-                if(implObject != null) {
-                    AbstractMessage requestMessage;
-                    AbstractMessage responseMessage;
+            final Pair<RpcServiceCollector.RpcServiceInfo, Object> serviceInfoObjectPair = getServiceImplementationObject(serviceIdentifier.getServiceIdentifier());
+            if(serviceInfoObjectPair == null) {
+                sendError(ctx, requestWirePacket, "Internal server error.");
 
-                    try {
-                        requestMessage = (AbstractMessage) methodInfo.getRequestMessageParser().invoke(null, (Object) requestWirePacket.getPayload().toByteArray());
-                    } catch (IllegalAccessException | InvocationTargetException ex) {
-                        sendError(ctx, requestWirePacket, "Unable to parse call request parameter.");
+                throw new RuntimeException(String.format("Service with identifier %d is not registered", serviceIdentifier.getServiceIdentifier()));
+            }
 
-                        throw ex;
-                    }
+            final RpcServiceCollector.RpcServiceInfo rpcServiceInfo = serviceInfoObjectPair.getFirst();
+            final RpcServiceCollector.RpcMethodInfo methodInfo = rpcServiceInfo.getMethodIdentifierMap().get(serviceIdentifier.getMethodIdentifier());
+            final Object implObject = serviceInfoObjectPair.getSecond();
 
-                    try {
-                        responseMessage = (AbstractMessage) methodInfo.getMethod().invoke(implObject, requestMessage);
-                    } catch (IllegalAccessException | InvocationTargetException ex) {
-                        sendError(ctx, requestWirePacket, "Unable to process call.");
-
-                        throw ex;
-                    }
-
-                    if(responseMessage != null) {
-                        WirePacketFormat.WirePacket.Builder responseWirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();
-                        responseWirePacketBuilder.setMessageIdentifier(requestWirePacket.getMessageIdentifier());
-                        responseWirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE);
-                        responseWirePacketBuilder.setServiceIdentifier(requestWirePacket.getServiceIdentifier());
-                        responseWirePacketBuilder.setPayload(responseMessage.toByteString());
-                        ctx.writeAndFlush(responseWirePacketBuilder.build());
-                    } else {
-                        sendError(ctx, requestWirePacket, "Unable to process call.");
-
-                        throw new RuntimeException(String.format("Response cannot be null from %s.%s", rpcServiceInfo.getImplClass().getName(), methodInfo.getMethod().getName()));
-                    }
-                } else {
-                    sendError(ctx, requestWirePacket, "Internal server error.");
-
-                    throw new RuntimeException(String.format("Unable to create implementation object of %s class", rpcServiceInfo.getServiceClass().getName()));
-                }
-            } else {
+            if(methodInfo == null) {
                 sendError(ctx, requestWirePacket, "Internal server error.");
 
                 throw new RuntimeException(String.format("Service class %s does not contain method with identifier %d", rpcServiceInfo.getServiceClass().getName(), serviceIdentifier.getMethodIdentifier()));
             }
-        } else {
-            sendError(ctx, requestWirePacket, "Internal server error.");
 
-            throw new RuntimeException(String.format("Service with identifier %d is not registered", serviceIdentifier.getServiceIdentifier()));
-        }
+            if(implObject == null) {
+                sendError(ctx, requestWirePacket, "Internal server error.");
+
+                throw new RuntimeException(String.format("Unable to create implementation object of %s class", rpcServiceInfo.getServiceClass().getName()));
+            }
+
+            AbstractMessage requestMessage;
+            AbstractMessage responseMessage;
+
+            try {
+                requestMessage = (AbstractMessage) methodInfo.getRequestMessageParser().invoke(null, (Object) requestWirePacket.getPayload().toByteArray());
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                sendError(ctx, requestWirePacket, "Unable to parse call request parameter");
+
+                throw ex;
+            }
+
+            try {
+                responseMessage = (AbstractMessage) methodInfo.getMethod().invoke(implObject, requestMessage);
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                sendError(ctx, requestWirePacket, "Unable to process call.");
+
+                throw ex;
+            }
+
+            if(responseMessage == null) {
+                sendError(ctx, requestWirePacket, "Unable to process call.");
+
+                throw new RuntimeException(String.format("Response cannot be null from %s.%s", rpcServiceInfo.getImplClass().getName(), methodInfo.getMethod().getName()));
+            }
+
+            WirePacketFormat.WirePacket.Builder responseWirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();
+            responseWirePacketBuilder.setMessageIdentifier(requestWirePacket.getMessageIdentifier());
+            responseWirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE);
+            responseWirePacketBuilder.setServiceIdentifier(requestWirePacket.getServiceIdentifier());
+            responseWirePacketBuilder.setPayload(responseMessage.toByteString());
+            ctx.writeAndFlush(responseWirePacketBuilder.build());
+        } while (false);
     }
 
     private void handleIncomingKeepAlive(ChannelHandlerContext ctx) {
