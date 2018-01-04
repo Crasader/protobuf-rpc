@@ -182,7 +182,7 @@ public final class RpcServiceCollector {
             if(method.getParameterTypes().length == 1) {
                 Class requestType = method.getParameterTypes()[0];
                 if(!AbstractMessage.class.isAssignableFrom(requestType)) {
-                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return accept a protobuf message.", classOfService.getName(), method.getName()));
+                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not accept a protobuf message.", classOfService.getName(), method.getName()));
                 }
 
                 //noinspection unchecked
