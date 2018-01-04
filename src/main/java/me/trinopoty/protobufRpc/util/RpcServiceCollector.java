@@ -19,13 +19,10 @@ import java.util.Map;
 
 public final class RpcServiceCollector {
 
-    @SuppressWarnings("unused")
     public static final class RpcMethodInfo {
 
         private Method mMethod;
         private int mMethodIdentifier;
-        private Class<? extends AbstractMessage> mRequestMessageType;
-        private Class<? extends AbstractMessage> mResponseMessageType;
         private Method mRequestMessageParser;
         private Method mResponseMessageParser;
 
@@ -35,14 +32,6 @@ public final class RpcServiceCollector {
 
         public int getMethodIdentifier() {
             return mMethodIdentifier;
-        }
-
-        public Class<? extends AbstractMessage> getRequestMessageType() {
-            return mRequestMessageType;
-        }
-
-        public Class<? extends AbstractMessage> getResponseMessageType() {
-            return mResponseMessageType;
         }
 
         public Method getRequestMessageParser() {
@@ -190,34 +179,34 @@ public final class RpcServiceCollector {
                 methodIdentifierList.add(rpcMethodInfo.mMethodIdentifier);
             }
 
-            if((method.getParameterTypes().length != 1) || !AbstractMessage.class.isAssignableFrom(method.getParameterTypes()[0])) {
-                throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not accept a protobuf message as parameter.", classOfService.getName(), method.getName()));
-            }
-
-            //noinspection unchecked
-            rpcMethodInfo.mRequestMessageType = (Class<? extends AbstractMessage>) method.getParameterTypes()[0];
-            rpcMethodInfo.mRequestMessageParser = getProtobufParserMethod(rpcMethodInfo.mRequestMessageType);
-            assert rpcMethodInfo.mRequestMessageParser != null;
-
-            if(!isOob) {
-                Class responseType = method.getReturnType();
-                if(!AbstractMessage.class.isAssignableFrom(responseType)) {
-                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return a protobuf message.", classOfService.getName(), method.getName()));
+            if(method.getParameterTypes().length == 1) {
+                Class requestType = method.getParameterTypes()[0];
+                if(!AbstractMessage.class.isAssignableFrom(requestType)) {
+                    throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return accept a protobuf message.", classOfService.getName(), method.getName()));
                 }
 
                 //noinspection unchecked
-                rpcMethodInfo.mResponseMessageType = responseType;
-                rpcMethodInfo.mResponseMessageParser = getProtobufParserMethod(rpcMethodInfo.mResponseMessageType);
+                rpcMethodInfo.mRequestMessageParser = getProtobufParserMethod(requestType);
+                assert rpcMethodInfo.mRequestMessageParser != null;
+            } else if(method.getParameterTypes().length != 0) {
+                throw new IllegalMethodSignatureException(String.format("Class<%s>.%s has invalid method signature.", classOfService.getName(), method.getName()));
+            }
 
-                assert rpcMethodInfo.mResponseMessageParser != null;
+            Class responseType = method.getReturnType();
+            if(!isOob) {
+                if(!responseType.equals(void.class)) {
+                    if(!AbstractMessage.class.isAssignableFrom(responseType)) {
+                        throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return a protobuf message.", classOfService.getName(), method.getName()));
+                    }
+
+                    //noinspection unchecked
+                    rpcMethodInfo.mResponseMessageParser = getProtobufParserMethod(responseType);
+                    assert rpcMethodInfo.mResponseMessageParser != null;
+                }
             } else {
-                Class responseType = method.getReturnType();
                 if(!responseType.equals(void.class)) {
                     throw new IllegalMethodSignatureException(String.format("Class<%s>.%s does not return void.", classOfService.getName(), method.getName()));
                 }
-
-                //noinspection unchecked
-                rpcMethodInfo.mResponseMessageType = responseType;
             }
 
             rpcMethodInfoMap.put(method, rpcMethodInfo);

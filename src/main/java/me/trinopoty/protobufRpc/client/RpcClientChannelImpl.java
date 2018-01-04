@@ -51,16 +51,22 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
             requestWirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST);
             requestWirePacketBuilder.setServiceIdentifier(serviceIdentifier);
 
-            AbstractMessage requestMessage = (AbstractMessage) args[0];
-            requestWirePacketBuilder.setPayload(requestMessage.toByteString());
+            if(methodInfo.getRequestMessageParser() != null) {
+                AbstractMessage requestMessage = (AbstractMessage) args[0];
+                requestWirePacketBuilder.setPayload(requestMessage.toByteString());
+            }
 
             WirePacketFormat.WirePacket responseWirePacketPacket = callRpcAndWaitForResponse(requestWirePacketBuilder.build());
             if(responseWirePacketPacket != null) {
                 if (responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) {
-                    try {
-                        return methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
-                    } catch (IllegalAccessException | InvocationTargetException ex) {
-                        throw new RpcCallException("Unable to parse response message.", ex);
+                    if(methodInfo.getResponseMessageParser() != null) {
+                        try {
+                            return methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
+                        } catch (IllegalAccessException | InvocationTargetException ex) {
+                            throw new RpcCallException("Unable to parse response message.", ex);
+                        }
+                    } else {
+                        return null;
                     }
                 } else if (responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR) {
                     WirePacketFormat.ErrorMessage errorMessage = WirePacketFormat.ErrorMessage.parseFrom(responseWirePacketPacket.getPayload());
