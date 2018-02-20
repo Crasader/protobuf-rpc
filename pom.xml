@@ -6,7 +6,7 @@
 
     <groupId>me.trinopoty</groupId>
     <artifactId>protobuf-rpc</artifactId>
-    <version>v0.5.1</version>
+    <version>v0.5.2</version>
 
     <name>Protobuf RPC</name>
     <organization>
