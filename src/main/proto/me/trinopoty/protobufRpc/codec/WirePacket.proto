@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "proto2";
 package me.trinopoty.protobufRpc.codec;
 
 option java_outer_classname = "WirePacketFormat";
@@ -13,19 +13,20 @@ enum MessageType {
 }
 
 message ServiceIdentifier {
-    int32 serviceIdentifier = 1;
-    int32 methodIdentifier = 2;
+    required int32 serviceIdentifier = 1;
+    required int32 methodIdentifier = 2;
 }
 
 message WirePacket {
-    int64 messageIdentifier = 1;
-    MessageType messageType = 2;
+    required int64 messageIdentifier = 1;
+    required MessageType messageType = 2;
+    optional int32 crc32 = 3;
 
-    ServiceIdentifier serviceIdentifier = 11;
+    optional ServiceIdentifier serviceIdentifier = 11;
 
-    bytes payload = 16;
+    optional bytes payload = 16;
 }
 
 message ErrorMessage {
-    string message = 1;
+    required string message = 1;
 }

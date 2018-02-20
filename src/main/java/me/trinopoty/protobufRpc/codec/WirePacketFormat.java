@@ -43,7 +43,6 @@ public final class WirePacketFormat {
      * <code>MESSAGE_TYPE_KEEP_ALIVE = 5;</code>
      */
     MESSAGE_TYPE_KEEP_ALIVE(5),
-    UNRECOGNIZED(-1),
     ;
 
     /**
@@ -73,10 +72,6 @@ public final class WirePacketFormat {
 
 
     public final int getNumber() {
-      if (this == UNRECOGNIZED) {
-        throw new java.lang.IllegalArgumentException(
-            "Can't get the number of an unknown enum value.");
-      }
       return value;
     }
 
@@ -133,9 +128,6 @@ public final class WirePacketFormat {
         throw new java.lang.IllegalArgumentException(
           "EnumValueDescriptor is not for this type.");
       }
-      if (desc.getIndex() == -1) {
-        return UNRECOGNIZED;
-      }
       return VALUES[desc.getIndex()];
     }
 
@@ -153,12 +145,20 @@ public final class WirePacketFormat {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>int32 serviceIdentifier = 1;</code>
+     * <code>required int32 serviceIdentifier = 1;</code>
+     */
+    boolean hasServiceIdentifier();
+    /**
+     * <code>required int32 serviceIdentifier = 1;</code>
      */
     int getServiceIdentifier();
 
     /**
-     * <code>int32 methodIdentifier = 2;</code>
+     * <code>required int32 methodIdentifier = 2;</code>
+     */
+    boolean hasMethodIdentifier();
+    /**
+     * <code>required int32 methodIdentifier = 2;</code>
      */
     int getMethodIdentifier();
   }
@@ -181,7 +181,7 @@ public final class WirePacketFormat {
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private ServiceIdentifier(
         com.google.protobuf.CodedInputStream input,
@@ -189,6 +189,8 @@ public final class WirePacketFormat {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -198,18 +200,19 @@ public final class WirePacketFormat {
               done = true;
               break;
             default: {
-              if (!input.skipField(tag)) {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
                 done = true;
               }
               break;
             }
             case 8: {
-
+              bitField0_ |= 0x00000001;
               serviceIdentifier_ = input.readInt32();
               break;
             }
             case 16: {
-
+              bitField0_ |= 0x00000002;
               methodIdentifier_ = input.readInt32();
               break;
             }
@@ -221,6 +224,7 @@ public final class WirePacketFormat {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -236,10 +240,17 @@ public final class WirePacketFormat {
               me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.class, me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.Builder.class);
     }
 
+    private int bitField0_;
     public static final int SERVICEIDENTIFIER_FIELD_NUMBER = 1;
     private int serviceIdentifier_;
     /**
-     * <code>int32 serviceIdentifier = 1;</code>
+     * <code>required int32 serviceIdentifier = 1;</code>
+     */
+    public boolean hasServiceIdentifier() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int32 serviceIdentifier = 1;</code>
      */
     public int getServiceIdentifier() {
       return serviceIdentifier_;
@@ -248,7 +259,13 @@ public final class WirePacketFormat {
     public static final int METHODIDENTIFIER_FIELD_NUMBER = 2;
     private int methodIdentifier_;
     /**
-     * <code>int32 methodIdentifier = 2;</code>
+     * <code>required int32 methodIdentifier = 2;</code>
+     */
+    public boolean hasMethodIdentifier() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int32 methodIdentifier = 2;</code>
      */
     public int getMethodIdentifier() {
       return methodIdentifier_;
@@ -260,18 +277,27 @@ public final class WirePacketFormat {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (!hasServiceIdentifier()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasMethodIdentifier()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       memoizedIsInitialized = 1;
       return true;
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (serviceIdentifier_ != 0) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeInt32(1, serviceIdentifier_);
       }
-      if (methodIdentifier_ != 0) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeInt32(2, methodIdentifier_);
       }
+      unknownFields.writeTo(output);
     }
 
     public int getSerializedSize() {
@@ -279,14 +305,15 @@ public final class WirePacketFormat {
       if (size != -1) return size;
 
       size = 0;
-      if (serviceIdentifier_ != 0) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(1, serviceIdentifier_);
       }
-      if (methodIdentifier_ != 0) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, methodIdentifier_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -303,10 +330,17 @@ public final class WirePacketFormat {
       me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier other = (me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier) obj;
 
       boolean result = true;
-      result = result && (getServiceIdentifier()
-          == other.getServiceIdentifier());
-      result = result && (getMethodIdentifier()
-          == other.getMethodIdentifier());
+      result = result && (hasServiceIdentifier() == other.hasServiceIdentifier());
+      if (hasServiceIdentifier()) {
+        result = result && (getServiceIdentifier()
+            == other.getServiceIdentifier());
+      }
+      result = result && (hasMethodIdentifier() == other.hasMethodIdentifier());
+      if (hasMethodIdentifier()) {
+        result = result && (getMethodIdentifier()
+            == other.getMethodIdentifier());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
 
@@ -317,10 +351,14 @@ public final class WirePacketFormat {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + SERVICEIDENTIFIER_FIELD_NUMBER;
-      hash = (53 * hash) + getServiceIdentifier();
-      hash = (37 * hash) + METHODIDENTIFIER_FIELD_NUMBER;
-      hash = (53 * hash) + getMethodIdentifier();
+      if (hasServiceIdentifier()) {
+        hash = (37 * hash) + SERVICEIDENTIFIER_FIELD_NUMBER;
+        hash = (53 * hash) + getServiceIdentifier();
+      }
+      if (hasMethodIdentifier()) {
+        hash = (37 * hash) + METHODIDENTIFIER_FIELD_NUMBER;
+        hash = (53 * hash) + getMethodIdentifier();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -440,9 +478,9 @@ public final class WirePacketFormat {
       public Builder clear() {
         super.clear();
         serviceIdentifier_ = 0;
-
+        bitField0_ = (bitField0_ & ~0x00000001);
         methodIdentifier_ = 0;
-
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -465,8 +503,17 @@ public final class WirePacketFormat {
 
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier buildPartial() {
         me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier result = new me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
         result.serviceIdentifier_ = serviceIdentifier_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
         result.methodIdentifier_ = methodIdentifier_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -508,17 +555,24 @@ public final class WirePacketFormat {
 
       public Builder mergeFrom(me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier other) {
         if (other == me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.getDefaultInstance()) return this;
-        if (other.getServiceIdentifier() != 0) {
+        if (other.hasServiceIdentifier()) {
           setServiceIdentifier(other.getServiceIdentifier());
         }
-        if (other.getMethodIdentifier() != 0) {
+        if (other.hasMethodIdentifier()) {
           setMethodIdentifier(other.getMethodIdentifier());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
+        if (!hasServiceIdentifier()) {
+          return false;
+        }
+        if (!hasMethodIdentifier()) {
+          return false;
+        }
         return true;
       }
 
@@ -539,28 +593,35 @@ public final class WirePacketFormat {
         }
         return this;
       }
+      private int bitField0_;
 
       private int serviceIdentifier_ ;
       /**
-       * <code>int32 serviceIdentifier = 1;</code>
+       * <code>required int32 serviceIdentifier = 1;</code>
+       */
+      public boolean hasServiceIdentifier() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int32 serviceIdentifier = 1;</code>
        */
       public int getServiceIdentifier() {
         return serviceIdentifier_;
       }
       /**
-       * <code>int32 serviceIdentifier = 1;</code>
+       * <code>required int32 serviceIdentifier = 1;</code>
        */
       public Builder setServiceIdentifier(int value) {
-        
+        bitField0_ |= 0x00000001;
         serviceIdentifier_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 serviceIdentifier = 1;</code>
+       * <code>required int32 serviceIdentifier = 1;</code>
        */
       public Builder clearServiceIdentifier() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         serviceIdentifier_ = 0;
         onChanged();
         return this;
@@ -568,37 +629,43 @@ public final class WirePacketFormat {
 
       private int methodIdentifier_ ;
       /**
-       * <code>int32 methodIdentifier = 2;</code>
+       * <code>required int32 methodIdentifier = 2;</code>
+       */
+      public boolean hasMethodIdentifier() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 methodIdentifier = 2;</code>
        */
       public int getMethodIdentifier() {
         return methodIdentifier_;
       }
       /**
-       * <code>int32 methodIdentifier = 2;</code>
+       * <code>required int32 methodIdentifier = 2;</code>
        */
       public Builder setMethodIdentifier(int value) {
-        
+        bitField0_ |= 0x00000002;
         methodIdentifier_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 methodIdentifier = 2;</code>
+       * <code>required int32 methodIdentifier = 2;</code>
        */
       public Builder clearMethodIdentifier() {
-        
+        bitField0_ = (bitField0_ & ~0x00000002);
         methodIdentifier_ = 0;
         onChanged();
         return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -615,7 +682,7 @@ public final class WirePacketFormat {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<ServiceIdentifier>
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ServiceIdentifier>
         PARSER = new com.google.protobuf.AbstractParser<ServiceIdentifier>() {
       public ServiceIdentifier parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
@@ -645,34 +712,51 @@ public final class WirePacketFormat {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>int64 messageIdentifier = 1;</code>
+     * <code>required int64 messageIdentifier = 1;</code>
+     */
+    boolean hasMessageIdentifier();
+    /**
+     * <code>required int64 messageIdentifier = 1;</code>
      */
     long getMessageIdentifier();
 
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+     * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
      */
-    int getMessageTypeValue();
+    boolean hasMessageType();
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+     * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
      */
     me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType getMessageType();
 
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+     * <code>optional int32 crc32 = 3;</code>
+     */
+    boolean hasCrc32();
+    /**
+     * <code>optional int32 crc32 = 3;</code>
+     */
+    int getCrc32();
+
+    /**
+     * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
      */
     boolean hasServiceIdentifier();
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+     * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
      */
     me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier getServiceIdentifier();
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+     * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
      */
     me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifierOrBuilder getServiceIdentifierOrBuilder();
 
     /**
-     * <code>bytes payload = 16;</code>
+     * <code>optional bytes payload = 16;</code>
+     */
+    boolean hasPayload();
+    /**
+     * <code>optional bytes payload = 16;</code>
      */
     com.google.protobuf.ByteString getPayload();
   }
@@ -690,13 +774,14 @@ public final class WirePacketFormat {
     private WirePacket() {
       messageIdentifier_ = 0L;
       messageType_ = 0;
+      crc32_ = 0;
       payload_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private WirePacket(
         com.google.protobuf.CodedInputStream input,
@@ -704,6 +789,8 @@ public final class WirePacketFormat {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -713,37 +800,48 @@ public final class WirePacketFormat {
               done = true;
               break;
             default: {
-              if (!input.skipField(tag)) {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
                 done = true;
               }
               break;
             }
             case 8: {
-
+              bitField0_ |= 0x00000001;
               messageIdentifier_ = input.readInt64();
               break;
             }
             case 16: {
               int rawValue = input.readEnum();
-
-              messageType_ = rawValue;
+              me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType value = me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(2, rawValue);
+              } else {
+                bitField0_ |= 0x00000002;
+                messageType_ = rawValue;
+              }
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              crc32_ = input.readInt32();
               break;
             }
             case 90: {
               me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.Builder subBuilder = null;
-              if (serviceIdentifier_ != null) {
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
                 subBuilder = serviceIdentifier_.toBuilder();
               }
-              serviceIdentifier_ = input.readMessage(me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.parser(), extensionRegistry);
+              serviceIdentifier_ = input.readMessage(me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.PARSER, extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(serviceIdentifier_);
                 serviceIdentifier_ = subBuilder.buildPartial();
               }
-
+              bitField0_ |= 0x00000008;
               break;
             }
             case 130: {
-
+              bitField0_ |= 0x00000010;
               payload_ = input.readBytes();
               break;
             }
@@ -755,6 +853,7 @@ public final class WirePacketFormat {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -770,10 +869,17 @@ public final class WirePacketFormat {
               me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket.class, me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket.Builder.class);
     }
 
+    private int bitField0_;
     public static final int MESSAGEIDENTIFIER_FIELD_NUMBER = 1;
     private long messageIdentifier_;
     /**
-     * <code>int64 messageIdentifier = 1;</code>
+     * <code>required int64 messageIdentifier = 1;</code>
+     */
+    public boolean hasMessageIdentifier() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int64 messageIdentifier = 1;</code>
      */
     public long getMessageIdentifier() {
       return messageIdentifier_;
@@ -782,44 +888,65 @@ public final class WirePacketFormat {
     public static final int MESSAGETYPE_FIELD_NUMBER = 2;
     private int messageType_;
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+     * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
      */
-    public int getMessageTypeValue() {
-      return messageType_;
+    public boolean hasMessageType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+     * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
      */
     public me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType getMessageType() {
       me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType result = me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.valueOf(messageType_);
-      return result == null ? me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.UNRECOGNIZED : result;
+      return result == null ? me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.MESSAGE_TYPE_NONE : result;
+    }
+
+    public static final int CRC32_FIELD_NUMBER = 3;
+    private int crc32_;
+    /**
+     * <code>optional int32 crc32 = 3;</code>
+     */
+    public boolean hasCrc32() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int32 crc32 = 3;</code>
+     */
+    public int getCrc32() {
+      return crc32_;
     }
 
     public static final int SERVICEIDENTIFIER_FIELD_NUMBER = 11;
     private me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier serviceIdentifier_;
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+     * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
      */
     public boolean hasServiceIdentifier() {
-      return serviceIdentifier_ != null;
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+     * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
      */
     public me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier getServiceIdentifier() {
       return serviceIdentifier_ == null ? me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.getDefaultInstance() : serviceIdentifier_;
     }
     /**
-     * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+     * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
      */
     public me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifierOrBuilder getServiceIdentifierOrBuilder() {
-      return getServiceIdentifier();
+      return serviceIdentifier_ == null ? me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.getDefaultInstance() : serviceIdentifier_;
     }
 
     public static final int PAYLOAD_FIELD_NUMBER = 16;
     private com.google.protobuf.ByteString payload_;
     /**
-     * <code>bytes payload = 16;</code>
+     * <code>optional bytes payload = 16;</code>
+     */
+    public boolean hasPayload() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional bytes payload = 16;</code>
      */
     public com.google.protobuf.ByteString getPayload() {
       return payload_;
@@ -831,24 +958,42 @@ public final class WirePacketFormat {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (!hasMessageIdentifier()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasMessageType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (hasServiceIdentifier()) {
+        if (!getServiceIdentifier().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (messageIdentifier_ != 0L) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeInt64(1, messageIdentifier_);
       }
-      if (messageType_ != me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.MESSAGE_TYPE_NONE.getNumber()) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeEnum(2, messageType_);
       }
-      if (serviceIdentifier_ != null) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, crc32_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeMessage(11, getServiceIdentifier());
       }
-      if (!payload_.isEmpty()) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBytes(16, payload_);
       }
+      unknownFields.writeTo(output);
     }
 
     public int getSerializedSize() {
@@ -856,22 +1001,27 @@ public final class WirePacketFormat {
       if (size != -1) return size;
 
       size = 0;
-      if (messageIdentifier_ != 0L) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(1, messageIdentifier_);
       }
-      if (messageType_ != me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.MESSAGE_TYPE_NONE.getNumber()) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, messageType_);
       }
-      if (serviceIdentifier_ != null) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, crc32_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, getServiceIdentifier());
       }
-      if (!payload_.isEmpty()) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(16, payload_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -888,16 +1038,31 @@ public final class WirePacketFormat {
       me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket other = (me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket) obj;
 
       boolean result = true;
-      result = result && (getMessageIdentifier()
-          == other.getMessageIdentifier());
-      result = result && messageType_ == other.messageType_;
+      result = result && (hasMessageIdentifier() == other.hasMessageIdentifier());
+      if (hasMessageIdentifier()) {
+        result = result && (getMessageIdentifier()
+            == other.getMessageIdentifier());
+      }
+      result = result && (hasMessageType() == other.hasMessageType());
+      if (hasMessageType()) {
+        result = result && messageType_ == other.messageType_;
+      }
+      result = result && (hasCrc32() == other.hasCrc32());
+      if (hasCrc32()) {
+        result = result && (getCrc32()
+            == other.getCrc32());
+      }
       result = result && (hasServiceIdentifier() == other.hasServiceIdentifier());
       if (hasServiceIdentifier()) {
         result = result && getServiceIdentifier()
             .equals(other.getServiceIdentifier());
       }
-      result = result && getPayload()
-          .equals(other.getPayload());
+      result = result && (hasPayload() == other.hasPayload());
+      if (hasPayload()) {
+        result = result && getPayload()
+            .equals(other.getPayload());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
 
@@ -908,17 +1073,27 @@ public final class WirePacketFormat {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + MESSAGEIDENTIFIER_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-          getMessageIdentifier());
-      hash = (37 * hash) + MESSAGETYPE_FIELD_NUMBER;
-      hash = (53 * hash) + messageType_;
+      if (hasMessageIdentifier()) {
+        hash = (37 * hash) + MESSAGEIDENTIFIER_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getMessageIdentifier());
+      }
+      if (hasMessageType()) {
+        hash = (37 * hash) + MESSAGETYPE_FIELD_NUMBER;
+        hash = (53 * hash) + messageType_;
+      }
+      if (hasCrc32()) {
+        hash = (37 * hash) + CRC32_FIELD_NUMBER;
+        hash = (53 * hash) + getCrc32();
+      }
       if (hasServiceIdentifier()) {
         hash = (37 * hash) + SERVICEIDENTIFIER_FIELD_NUMBER;
         hash = (53 * hash) + getServiceIdentifier().hashCode();
       }
-      hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
-      hash = (53 * hash) + getPayload().hashCode();
+      if (hasPayload()) {
+        hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
+        hash = (53 * hash) + getPayload().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1033,22 +1208,25 @@ public final class WirePacketFormat {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getServiceIdentifierFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
         messageIdentifier_ = 0L;
-
+        bitField0_ = (bitField0_ & ~0x00000001);
         messageType_ = 0;
-
+        bitField0_ = (bitField0_ & ~0x00000002);
+        crc32_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (serviceIdentifierBuilder_ == null) {
           serviceIdentifier_ = null;
         } else {
-          serviceIdentifier_ = null;
-          serviceIdentifierBuilder_ = null;
+          serviceIdentifierBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000008);
         payload_ = com.google.protobuf.ByteString.EMPTY;
-
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -1071,14 +1249,33 @@ public final class WirePacketFormat {
 
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket buildPartial() {
         me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket result = new me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
         result.messageIdentifier_ = messageIdentifier_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
         result.messageType_ = messageType_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.crc32_ = crc32_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
         if (serviceIdentifierBuilder_ == null) {
           result.serviceIdentifier_ = serviceIdentifier_;
         } else {
           result.serviceIdentifier_ = serviceIdentifierBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
         result.payload_ = payload_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1120,23 +1317,38 @@ public final class WirePacketFormat {
 
       public Builder mergeFrom(me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket other) {
         if (other == me.trinopoty.protobufRpc.codec.WirePacketFormat.WirePacket.getDefaultInstance()) return this;
-        if (other.getMessageIdentifier() != 0L) {
+        if (other.hasMessageIdentifier()) {
           setMessageIdentifier(other.getMessageIdentifier());
         }
-        if (other.messageType_ != 0) {
-          setMessageTypeValue(other.getMessageTypeValue());
+        if (other.hasMessageType()) {
+          setMessageType(other.getMessageType());
+        }
+        if (other.hasCrc32()) {
+          setCrc32(other.getCrc32());
         }
         if (other.hasServiceIdentifier()) {
           mergeServiceIdentifier(other.getServiceIdentifier());
         }
-        if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
+        if (other.hasPayload()) {
           setPayload(other.getPayload());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
+        if (!hasMessageIdentifier()) {
+          return false;
+        }
+        if (!hasMessageType()) {
+          return false;
+        }
+        if (hasServiceIdentifier()) {
+          if (!getServiceIdentifier().isInitialized()) {
+            return false;
+          }
+        }
         return true;
       }
 
@@ -1157,28 +1369,35 @@ public final class WirePacketFormat {
         }
         return this;
       }
+      private int bitField0_;
 
       private long messageIdentifier_ ;
       /**
-       * <code>int64 messageIdentifier = 1;</code>
+       * <code>required int64 messageIdentifier = 1;</code>
+       */
+      public boolean hasMessageIdentifier() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int64 messageIdentifier = 1;</code>
        */
       public long getMessageIdentifier() {
         return messageIdentifier_;
       }
       /**
-       * <code>int64 messageIdentifier = 1;</code>
+       * <code>required int64 messageIdentifier = 1;</code>
        */
       public Builder setMessageIdentifier(long value) {
-        
+        bitField0_ |= 0x00000001;
         messageIdentifier_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int64 messageIdentifier = 1;</code>
+       * <code>required int64 messageIdentifier = 1;</code>
        */
       public Builder clearMessageIdentifier() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         messageIdentifier_ = 0L;
         onChanged();
         return this;
@@ -1186,44 +1405,68 @@ public final class WirePacketFormat {
 
       private int messageType_ = 0;
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+       * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
        */
-      public int getMessageTypeValue() {
-        return messageType_;
+      public boolean hasMessageType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
-       */
-      public Builder setMessageTypeValue(int value) {
-        messageType_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+       * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
        */
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType getMessageType() {
         me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType result = me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.valueOf(messageType_);
-        return result == null ? me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.UNRECOGNIZED : result;
+        return result == null ? me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType.MESSAGE_TYPE_NONE : result;
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+       * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
        */
       public Builder setMessageType(me.trinopoty.protobufRpc.codec.WirePacketFormat.MessageType value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        
+        bitField0_ |= 0x00000002;
         messageType_ = value.getNumber();
         onChanged();
         return this;
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
+       * <code>required .me.trinopoty.protobufRpc.codec.MessageType messageType = 2;</code>
        */
       public Builder clearMessageType() {
-        
+        bitField0_ = (bitField0_ & ~0x00000002);
         messageType_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int crc32_ ;
+      /**
+       * <code>optional int32 crc32 = 3;</code>
+       */
+      public boolean hasCrc32() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int32 crc32 = 3;</code>
+       */
+      public int getCrc32() {
+        return crc32_;
+      }
+      /**
+       * <code>optional int32 crc32 = 3;</code>
+       */
+      public Builder setCrc32(int value) {
+        bitField0_ |= 0x00000004;
+        crc32_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 crc32 = 3;</code>
+       */
+      public Builder clearCrc32() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        crc32_ = 0;
         onChanged();
         return this;
       }
@@ -1232,13 +1475,13 @@ public final class WirePacketFormat {
       private com.google.protobuf.SingleFieldBuilderV3<
           me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier, me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.Builder, me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifierOrBuilder> serviceIdentifierBuilder_;
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public boolean hasServiceIdentifier() {
-        return serviceIdentifierBuilder_ != null || serviceIdentifier_ != null;
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier getServiceIdentifier() {
         if (serviceIdentifierBuilder_ == null) {
@@ -1248,7 +1491,7 @@ public final class WirePacketFormat {
         }
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public Builder setServiceIdentifier(me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier value) {
         if (serviceIdentifierBuilder_ == null) {
@@ -1260,11 +1503,11 @@ public final class WirePacketFormat {
         } else {
           serviceIdentifierBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public Builder setServiceIdentifier(
           me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.Builder builderForValue) {
@@ -1274,15 +1517,17 @@ public final class WirePacketFormat {
         } else {
           serviceIdentifierBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public Builder mergeServiceIdentifier(me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier value) {
         if (serviceIdentifierBuilder_ == null) {
-          if (serviceIdentifier_ != null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              serviceIdentifier_ != null &&
+              serviceIdentifier_ != me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.getDefaultInstance()) {
             serviceIdentifier_ =
               me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.newBuilder(serviceIdentifier_).mergeFrom(value).buildPartial();
           } else {
@@ -1292,33 +1537,32 @@ public final class WirePacketFormat {
         } else {
           serviceIdentifierBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public Builder clearServiceIdentifier() {
         if (serviceIdentifierBuilder_ == null) {
           serviceIdentifier_ = null;
           onChanged();
         } else {
-          serviceIdentifier_ = null;
-          serviceIdentifierBuilder_ = null;
+          serviceIdentifierBuilder_.clear();
         }
-
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.Builder getServiceIdentifierBuilder() {
-        
+        bitField0_ |= 0x00000008;
         onChanged();
         return getServiceIdentifierFieldBuilder().getBuilder();
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifierOrBuilder getServiceIdentifierOrBuilder() {
         if (serviceIdentifierBuilder_ != null) {
@@ -1329,7 +1573,7 @@ public final class WirePacketFormat {
         }
       }
       /**
-       * <code>.me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
+       * <code>optional .me.trinopoty.protobufRpc.codec.ServiceIdentifier serviceIdentifier = 11;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier, me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifier.Builder, me.trinopoty.protobufRpc.codec.WirePacketFormat.ServiceIdentifierOrBuilder> 
@@ -1347,40 +1591,46 @@ public final class WirePacketFormat {
 
       private com.google.protobuf.ByteString payload_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>bytes payload = 16;</code>
+       * <code>optional bytes payload = 16;</code>
+       */
+      public boolean hasPayload() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional bytes payload = 16;</code>
        */
       public com.google.protobuf.ByteString getPayload() {
         return payload_;
       }
       /**
-       * <code>bytes payload = 16;</code>
+       * <code>optional bytes payload = 16;</code>
        */
       public Builder setPayload(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+  bitField0_ |= 0x00000010;
         payload_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bytes payload = 16;</code>
+       * <code>optional bytes payload = 16;</code>
        */
       public Builder clearPayload() {
-        
+        bitField0_ = (bitField0_ & ~0x00000010);
         payload_ = getDefaultInstance().getPayload();
         onChanged();
         return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -1397,7 +1647,7 @@ public final class WirePacketFormat {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<WirePacket>
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<WirePacket>
         PARSER = new com.google.protobuf.AbstractParser<WirePacket>() {
       public WirePacket parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
@@ -1427,11 +1677,15 @@ public final class WirePacketFormat {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string message = 1;</code>
+     * <code>required string message = 1;</code>
+     */
+    boolean hasMessage();
+    /**
+     * <code>required string message = 1;</code>
      */
     java.lang.String getMessage();
     /**
-     * <code>string message = 1;</code>
+     * <code>required string message = 1;</code>
      */
     com.google.protobuf.ByteString
         getMessageBytes();
@@ -1454,7 +1708,7 @@ public final class WirePacketFormat {
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private ErrorMessage(
         com.google.protobuf.CodedInputStream input,
@@ -1462,6 +1716,8 @@ public final class WirePacketFormat {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -1471,15 +1727,16 @@ public final class WirePacketFormat {
               done = true;
               break;
             default: {
-              if (!input.skipField(tag)) {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
                 done = true;
               }
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              message_ = s;
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              message_ = bs;
               break;
             }
           }
@@ -1490,6 +1747,7 @@ public final class WirePacketFormat {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -1505,10 +1763,17 @@ public final class WirePacketFormat {
               me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.class, me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.Builder.class);
     }
 
+    private int bitField0_;
     public static final int MESSAGE_FIELD_NUMBER = 1;
     private volatile java.lang.Object message_;
     /**
-     * <code>string message = 1;</code>
+     * <code>required string message = 1;</code>
+     */
+    public boolean hasMessage() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string message = 1;</code>
      */
     public java.lang.String getMessage() {
       java.lang.Object ref = message_;
@@ -1518,12 +1783,14 @@ public final class WirePacketFormat {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        message_ = s;
+        if (bs.isValidUtf8()) {
+          message_ = s;
+        }
         return s;
       }
     }
     /**
-     * <code>string message = 1;</code>
+     * <code>required string message = 1;</code>
      */
     public com.google.protobuf.ByteString
         getMessageBytes() {
@@ -1545,15 +1812,20 @@ public final class WirePacketFormat {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (!hasMessage()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       memoizedIsInitialized = 1;
       return true;
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getMessageBytes().isEmpty()) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, message_);
       }
+      unknownFields.writeTo(output);
     }
 
     public int getSerializedSize() {
@@ -1561,9 +1833,10 @@ public final class WirePacketFormat {
       if (size != -1) return size;
 
       size = 0;
-      if (!getMessageBytes().isEmpty()) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, message_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1580,8 +1853,12 @@ public final class WirePacketFormat {
       me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage other = (me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage) obj;
 
       boolean result = true;
-      result = result && getMessage()
-          .equals(other.getMessage());
+      result = result && (hasMessage() == other.hasMessage());
+      if (hasMessage()) {
+        result = result && getMessage()
+            .equals(other.getMessage());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
 
@@ -1592,8 +1869,10 @@ public final class WirePacketFormat {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
-      hash = (53 * hash) + getMessage().hashCode();
+      if (hasMessage()) {
+        hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+        hash = (53 * hash) + getMessage().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1713,7 +1992,7 @@ public final class WirePacketFormat {
       public Builder clear() {
         super.clear();
         message_ = "";
-
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -1736,7 +2015,13 @@ public final class WirePacketFormat {
 
       public me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage buildPartial() {
         me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage result = new me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
         result.message_ = message_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1778,15 +2063,20 @@ public final class WirePacketFormat {
 
       public Builder mergeFrom(me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage other) {
         if (other == me.trinopoty.protobufRpc.codec.WirePacketFormat.ErrorMessage.getDefaultInstance()) return this;
-        if (!other.getMessage().isEmpty()) {
+        if (other.hasMessage()) {
+          bitField0_ |= 0x00000001;
           message_ = other.message_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
+        if (!hasMessage()) {
+          return false;
+        }
         return true;
       }
 
@@ -1807,10 +2097,17 @@ public final class WirePacketFormat {
         }
         return this;
       }
+      private int bitField0_;
 
       private java.lang.Object message_ = "";
       /**
-       * <code>string message = 1;</code>
+       * <code>required string message = 1;</code>
+       */
+      public boolean hasMessage() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string message = 1;</code>
        */
       public java.lang.String getMessage() {
         java.lang.Object ref = message_;
@@ -1818,14 +2115,16 @@ public final class WirePacketFormat {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          message_ = s;
+          if (bs.isValidUtf8()) {
+            message_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>string message = 1;</code>
+       * <code>required string message = 1;</code>
        */
       public com.google.protobuf.ByteString
           getMessageBytes() {
@@ -1841,49 +2140,48 @@ public final class WirePacketFormat {
         }
       }
       /**
-       * <code>string message = 1;</code>
+       * <code>required string message = 1;</code>
        */
       public Builder setMessage(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+  bitField0_ |= 0x00000001;
         message_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string message = 1;</code>
+       * <code>required string message = 1;</code>
        */
       public Builder clearMessage() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         message_ = getDefaultInstance().getMessage();
         onChanged();
         return this;
       }
       /**
-       * <code>string message = 1;</code>
+       * <code>required string message = 1;</code>
        */
       public Builder setMessageBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  checkByteStringIsUtf8(value);
-        
+  bitField0_ |= 0x00000001;
         message_ = value;
         onChanged();
         return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -1900,7 +2198,7 @@ public final class WirePacketFormat {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<ErrorMessage>
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ErrorMessage>
         PARSER = new com.google.protobuf.AbstractParser<ErrorMessage>() {
       public ErrorMessage parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
@@ -1952,18 +2250,18 @@ public final class WirePacketFormat {
       "\n/me/trinopoty/protobufRpc/codec/WirePac" +
       "ket.proto\022\036me.trinopoty.protobufRpc.code" +
       "c\"H\n\021ServiceIdentifier\022\031\n\021serviceIdentif" +
-      "ier\030\001 \001(\005\022\030\n\020methodIdentifier\030\002 \001(\005\"\310\001\n\n" +
-      "WirePacket\022\031\n\021messageIdentifier\030\001 \001(\003\022@\n" +
-      "\013messageType\030\002 \001(\0162+.me.trinopoty.protob" +
-      "ufRpc.codec.MessageType\022L\n\021serviceIdenti" +
-      "fier\030\013 \001(\01321.me.trinopoty.protobufRpc.co" +
-      "dec.ServiceIdentifier\022\017\n\007payload\030\020 \001(\014\"\037" +
-      "\n\014ErrorMessage\022\017\n\007message\030\001 \001(\t*\244\001\n\013Mess",
-      "ageType\022\025\n\021MESSAGE_TYPE_NONE\020\000\022\030\n\024MESSAG" +
-      "E_TYPE_REQUEST\020\001\022\031\n\025MESSAGE_TYPE_RESPONS" +
-      "E\020\002\022\026\n\022MESSAGE_TYPE_ERROR\020\003\022\024\n\020MESSAGE_T" +
-      "YPE_OOB\020\004\022\033\n\027MESSAGE_TYPE_KEEP_ALIVE\020\005B\022" +
-      "B\020WirePacketFormatb\006proto3"
+      "ier\030\001 \002(\005\022\030\n\020methodIdentifier\030\002 \002(\005\"\327\001\n\n" +
+      "WirePacket\022\031\n\021messageIdentifier\030\001 \002(\003\022@\n" +
+      "\013messageType\030\002 \002(\0162+.me.trinopoty.protob" +
+      "ufRpc.codec.MessageType\022\r\n\005crc32\030\003 \001(\005\022L" +
+      "\n\021serviceIdentifier\030\013 \001(\01321.me.trinopoty" +
+      ".protobufRpc.codec.ServiceIdentifier\022\017\n\007" +
+      "payload\030\020 \001(\014\"\037\n\014ErrorMessage\022\017\n\007message",
+      "\030\001 \002(\t*\244\001\n\013MessageType\022\025\n\021MESSAGE_TYPE_N" +
+      "ONE\020\000\022\030\n\024MESSAGE_TYPE_REQUEST\020\001\022\031\n\025MESSA" +
+      "GE_TYPE_RESPONSE\020\002\022\026\n\022MESSAGE_TYPE_ERROR" +
+      "\020\003\022\024\n\020MESSAGE_TYPE_OOB\020\004\022\033\n\027MESSAGE_TYPE" +
+      "_KEEP_ALIVE\020\005B\022B\020WirePacketFormat"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1988,7 +2286,7 @@ public final class WirePacketFormat {
     internal_static_me_trinopoty_protobufRpc_codec_WirePacket_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_me_trinopoty_protobufRpc_codec_WirePacket_descriptor,
-        new java.lang.String[] { "MessageIdentifier", "MessageType", "ServiceIdentifier", "Payload", });
+        new java.lang.String[] { "MessageIdentifier", "MessageType", "Crc32", "ServiceIdentifier", "Payload", });
     internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_me_trinopoty_protobufRpc_codec_ErrorMessage_fieldAccessorTable = new

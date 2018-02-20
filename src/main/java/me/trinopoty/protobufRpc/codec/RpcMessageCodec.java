@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import io.netty.handler.codec.TooLongFrameException;
 import me.trinopoty.protobufRpc.ProtobufRpcLog;
+import me.trinopoty.protobufRpc.util.CRC32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -121,6 +122,20 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                             logWireMessage(wirePacket);
                         }
 
+                        if(wirePacket.hasPayload() && wirePacket.hasCrc32()) {
+                            final long crc32Value_provided = wirePacket.getCrc32() & 0x00000000ffffffffL;
+
+                            final CRC32 crc32 = new CRC32();
+                            crc32.update(wirePacket.getPayload());
+
+                            if(crc32Value_provided != crc32.getValue()) {
+                                if(mEnableDecodeLogging) {
+                                    mLogger.error(String.format("[RpcDecoder:%s] Invalid payload crc32", mLoggingName));
+                                }
+                                return null;
+                            }
+                        }
+
                         return wirePacket;
                     } catch (InvalidProtocolBufferException ex) {
                         if(mEnableDecodeLogging) {
@@ -138,9 +153,6 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
     private void logWireMessage(WirePacketFormat.WirePacket wirePacket) {
         switch (wirePacket.getMessageType()) {
             case MESSAGE_TYPE_KEEP_ALIVE:
-                mLogger.info(String.format(
-                        "[RpcEncoder:%s] Keep-Alive",
-                        mLoggingName));
                 break;
             case MESSAGE_TYPE_REQUEST:
                 mLogger.info(String.format(
