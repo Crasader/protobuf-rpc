@@ -43,9 +43,9 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast("protobuf-codec", new RpcMessageCodec(
                 mMaxReceivePacketLength,
                 true,
-                mEnableTrafficLogging,
-                mEnableTrafficLogging,
-                mLoggingName));
+                mLoggingName, mEnableTrafficLogging,
+                mEnableTrafficLogging
+        ));
         if(mKeepAlive) {
             pipeline.addLast("keep-alive", new IdleStateHandler(
                     true,

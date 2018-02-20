@@ -26,7 +26,12 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
     private int mDiscardLength = 0;
 
-    public RpcMessageCodec(int maxReceivePacketLength, boolean discardLargerPacket, boolean enableEncodeLogging, boolean enableDecodeLogging, String loggingName) {
+    public RpcMessageCodec(
+            int maxReceivePacketLength,
+            boolean discardLargerPacket,
+            String loggingName,
+            boolean enableEncodeLogging,
+            boolean enableDecodeLogging) {
         mMaxReceivePacketLength = maxReceivePacketLength;
         mDiscardLargerPacket = discardLargerPacket;
 

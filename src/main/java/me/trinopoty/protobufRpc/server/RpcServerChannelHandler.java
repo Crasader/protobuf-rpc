@@ -19,6 +19,9 @@ import java.util.concurrent.TimeUnit;
 final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     private final ProtobufRpcServer mProtobufRpcServer;
+    private final String mLoggingName;
+    private final boolean mEnableRpcLogging;
+
     private final HashMap<Class, Object> mServiceImplementationObjectMap = new HashMap<>();
 
     private ProtobufRpcServerChannel mRpcServerChannel;
@@ -26,8 +29,13 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     private boolean mKeepAlive = false;
 
-    RpcServerChannelHandler(ProtobufRpcServer protobufRpcServer) {
+    RpcServerChannelHandler(
+            ProtobufRpcServer protobufRpcServer,
+            String loggingName,
+            boolean enableRpcLogging) {
         mProtobufRpcServer = protobufRpcServer;
+        mLoggingName = loggingName;
+        mEnableRpcLogging = enableRpcLogging;
     }
 
     @Override

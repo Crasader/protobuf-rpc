@@ -45,6 +45,7 @@ public final class ProtobufRpcServer {
 
         private int mBacklogCount = 5;
         private Integer mMaxReceivePacketLength = null;
+        private boolean mEnableRpcLogging = false;
         private boolean mEnableTrafficLogging = false;
         private String mLoggingName = null;
 
@@ -124,6 +125,17 @@ public final class ProtobufRpcServer {
         }
 
         /**
+         * Enable or disable rpc logging. If logging is enabled, a logging name must be provided.
+         *
+         * @param enableRpcLogging Value indicating whether rpc logging is to be enabled or disabled.
+         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
+         */
+        public Builder setEnableRpcLogging(boolean enableRpcLogging) {
+            mEnableRpcLogging = enableRpcLogging;
+            return this;
+        }
+
+        /**
          * Enable or disable traffic logging. If logging is enabled, a logging name must be provided.
          *
          * @param enableTrafficLogging Value indicating whether traffic logging would be enabled or disabled.
@@ -193,8 +205,11 @@ public final class ProtobufRpcServer {
             if((mLocalAddress == null) && (mSslLocalAddress == null)) {
                 throw new IllegalArgumentException("LocalAddress must be provided.");
             }
+            if(mEnableRpcLogging && (mLoggingName == null)) {
+                throw new IllegalArgumentException("Logging name must be provided if RPC logging is enabled.");
+            }
             if(mEnableTrafficLogging && (mLoggingName == null)) {
-                throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
+                throw new IllegalArgumentException("Logging name must be provided if traffic logging is enabled.");
             }
 
             ProtobufRpcServer protobufRpcServer = new ProtobufRpcServer(mRpcServiceCollector);
@@ -207,8 +222,10 @@ public final class ProtobufRpcServer {
                         protobufRpcServer,
                         mMaxReceivePacketLength,
                         null,
-                        mEnableTrafficLogging,
-                        mLoggingName));
+                        mLoggingName,
+                        mEnableRpcLogging,
+                        mEnableTrafficLogging
+                ));
                 serverBootstrap.option(ChannelOption.SO_BACKLOG, mBacklogCount);
 
                 protobufRpcServer.setServerBootstrap(mLocalAddress, serverBootstrap);
@@ -222,8 +239,10 @@ public final class ProtobufRpcServer {
                         protobufRpcServer,
                         mMaxReceivePacketLength,
                         mSslContext,
-                        mEnableTrafficLogging,
-                        mLoggingName));
+                        mLoggingName,
+                        mEnableRpcLogging,
+                        mEnableTrafficLogging
+                ));
                 sslServerBootstrap.option(ChannelOption.SO_BACKLOG, mBacklogCount);
 
                 protobufRpcServer.setSslServerBootstrap(mSslLocalAddress, sslServerBootstrap);

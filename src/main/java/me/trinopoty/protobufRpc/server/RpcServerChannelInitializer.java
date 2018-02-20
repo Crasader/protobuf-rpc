@@ -13,20 +13,25 @@ final class RpcServerChannelInitializer extends ChannelInitializer<SocketChannel
     private final ProtobufRpcServer mProtobufRpcServer;
     private final int mMaxReceivePacketLength;
     private final SslContext mSslContext;
-    private final boolean mEnableTrafficLogging;
+
     private final String mLoggingName;
+    private final boolean mEnableRpcLogging;
+    private final boolean mEnableTrafficLogging;
 
     RpcServerChannelInitializer(
             ProtobufRpcServer protobufRpcServer,
             Integer maxReceivePacketLength,
             SslContext sslContext,
-            boolean enableTrafficLogging,
-            String loggingName) {
+            String loggingName,
+            boolean enableRpcLogging,
+            boolean enableTrafficLogging) {
         mProtobufRpcServer = protobufRpcServer;
         mMaxReceivePacketLength = (maxReceivePacketLength != null)? maxReceivePacketLength : MAX_PACKET_LENGTH;
         mSslContext = sslContext;
-        mEnableTrafficLogging = enableTrafficLogging;
+
         mLoggingName = loggingName;
+        mEnableRpcLogging = enableRpcLogging;
+        mEnableTrafficLogging = enableTrafficLogging;
     }
 
     @Override
@@ -40,9 +45,12 @@ final class RpcServerChannelInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast("protobuf-codec", new RpcMessageCodec(
                 mMaxReceivePacketLength,
                 true,
+                mLoggingName,
                 mEnableTrafficLogging,
-                mEnableTrafficLogging,
-                mLoggingName));
-        pipeline.addLast("handler", new RpcServerChannelHandler(mProtobufRpcServer));
+                mEnableTrafficLogging));
+        pipeline.addLast("handler", new RpcServerChannelHandler(
+                mProtobufRpcServer,
+                mLoggingName,
+                mEnableRpcLogging));
     }
 }
