@@ -17,6 +17,17 @@ public final class CRC32 {
         reset();
     }
 
+    public static long calculateCrc32(ByteString byteString) {
+        int crc = 0xffffffff;
+
+        ByteString.ByteIterator iterator = byteString.iterator();
+        while (iterator.hasNext()) {
+            crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ iterator.nextByte()) & 0xff];
+        }
+
+        return crc & 0x00000000ffffffffL;
+    }
+
     public void reset() {
         crc = 0xffffffff;
     }

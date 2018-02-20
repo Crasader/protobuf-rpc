@@ -123,12 +123,10 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                         }
 
                         if(wirePacket.hasPayload() && wirePacket.hasCrc32()) {
-                            final long crc32Value_provided = wirePacket.getCrc32() & 0x00000000ffffffffL;
+                            final long crc32_provided = wirePacket.getCrc32() & 0x00000000ffffffffL;
+                            final long crc32_calculated = CRC32.calculateCrc32(wirePacket.getPayload());
 
-                            final CRC32 crc32 = new CRC32();
-                            crc32.update(wirePacket.getPayload());
-
-                            if(crc32Value_provided != crc32.getValue()) {
+                            if(crc32_provided != crc32_calculated) {
                                 if(mEnableDecodeLogging) {
                                     mLogger.error(String.format("[RpcDecoder:%s] Invalid payload crc32", mLoggingName));
                                 }
