@@ -712,11 +712,11 @@ public final class WirePacketFormat {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required int64 messageIdentifier = 1;</code>
+     * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
      */
     boolean hasMessageIdentifier();
     /**
-     * <code>required int64 messageIdentifier = 1;</code>
+     * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
      */
     long getMessageIdentifier();
 
@@ -873,13 +873,13 @@ public final class WirePacketFormat {
     public static final int MESSAGEIDENTIFIER_FIELD_NUMBER = 1;
     private long messageIdentifier_;
     /**
-     * <code>required int64 messageIdentifier = 1;</code>
+     * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
      */
     public boolean hasMessageIdentifier() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required int64 messageIdentifier = 1;</code>
+     * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
      */
     public long getMessageIdentifier() {
       return messageIdentifier_;
@@ -958,10 +958,6 @@ public final class WirePacketFormat {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasMessageIdentifier()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       if (!hasMessageType()) {
         memoizedIsInitialized = 0;
         return false;
@@ -1338,9 +1334,6 @@ public final class WirePacketFormat {
       }
 
       public final boolean isInitialized() {
-        if (!hasMessageIdentifier()) {
-          return false;
-        }
         if (!hasMessageType()) {
           return false;
         }
@@ -1373,19 +1366,19 @@ public final class WirePacketFormat {
 
       private long messageIdentifier_ ;
       /**
-       * <code>required int64 messageIdentifier = 1;</code>
+       * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
        */
       public boolean hasMessageIdentifier() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required int64 messageIdentifier = 1;</code>
+       * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
        */
       public long getMessageIdentifier() {
         return messageIdentifier_;
       }
       /**
-       * <code>required int64 messageIdentifier = 1;</code>
+       * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
        */
       public Builder setMessageIdentifier(long value) {
         bitField0_ |= 0x00000001;
@@ -1394,7 +1387,7 @@ public final class WirePacketFormat {
         return this;
       }
       /**
-       * <code>required int64 messageIdentifier = 1;</code>
+       * <code>optional int64 messageIdentifier = 1 [default = 0];</code>
        */
       public Builder clearMessageIdentifier() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -2250,18 +2243,18 @@ public final class WirePacketFormat {
       "\n/me/trinopoty/protobufRpc/codec/WirePac" +
       "ket.proto\022\036me.trinopoty.protobufRpc.code" +
       "c\"H\n\021ServiceIdentifier\022\031\n\021serviceIdentif" +
-      "ier\030\001 \002(\005\022\030\n\020methodIdentifier\030\002 \002(\005\"\327\001\n\n" +
-      "WirePacket\022\031\n\021messageIdentifier\030\001 \002(\003\022@\n" +
-      "\013messageType\030\002 \002(\0162+.me.trinopoty.protob" +
-      "ufRpc.codec.MessageType\022\r\n\005crc32\030\003 \001(\005\022L" +
-      "\n\021serviceIdentifier\030\013 \001(\01321.me.trinopoty" +
-      ".protobufRpc.codec.ServiceIdentifier\022\017\n\007" +
-      "payload\030\020 \001(\014\"\037\n\014ErrorMessage\022\017\n\007message",
-      "\030\001 \002(\t*\244\001\n\013MessageType\022\025\n\021MESSAGE_TYPE_N" +
-      "ONE\020\000\022\030\n\024MESSAGE_TYPE_REQUEST\020\001\022\031\n\025MESSA" +
-      "GE_TYPE_RESPONSE\020\002\022\026\n\022MESSAGE_TYPE_ERROR" +
-      "\020\003\022\024\n\020MESSAGE_TYPE_OOB\020\004\022\033\n\027MESSAGE_TYPE" +
-      "_KEEP_ALIVE\020\005B\022B\020WirePacketFormat"
+      "ier\030\001 \002(\005\022\030\n\020methodIdentifier\030\002 \002(\005\"\332\001\n\n" +
+      "WirePacket\022\034\n\021messageIdentifier\030\001 \001(\003:\0010" +
+      "\022@\n\013messageType\030\002 \002(\0162+.me.trinopoty.pro" +
+      "tobufRpc.codec.MessageType\022\r\n\005crc32\030\003 \001(" +
+      "\005\022L\n\021serviceIdentifier\030\013 \001(\01321.me.trinop" +
+      "oty.protobufRpc.codec.ServiceIdentifier\022" +
+      "\017\n\007payload\030\020 \001(\014\"\037\n\014ErrorMessage\022\017\n\007mess",
+      "age\030\001 \002(\t*\244\001\n\013MessageType\022\025\n\021MESSAGE_TYP" +
+      "E_NONE\020\000\022\030\n\024MESSAGE_TYPE_REQUEST\020\001\022\031\n\025ME" +
+      "SSAGE_TYPE_RESPONSE\020\002\022\026\n\022MESSAGE_TYPE_ER" +
+      "ROR\020\003\022\024\n\020MESSAGE_TYPE_OOB\020\004\022\033\n\027MESSAGE_T" +
+      "YPE_KEEP_ALIVE\020\005B\022B\020WirePacketFormat"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

@@ -18,7 +18,7 @@ message ServiceIdentifier {
 }
 
 message WirePacket {
-    required int64 messageIdentifier = 1;
+    optional int64 messageIdentifier = 1 [default = 0];
     required MessageType messageType = 2;
     optional int32 crc32 = 3;
 
