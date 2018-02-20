@@ -40,7 +40,7 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
             boolean enableRpcLogging) {
         mProtobufRpcServer = protobufRpcServer;
 
-        mLogger = LogManager.getLogger(ProtobufRpcLog.SERVER_RPC);
+        mLogger = (enableRpcLogging)? LogManager.getLogger(ProtobufRpcLog.SERVER_RPC) : null;
         mLoggingName = loggingName;
         mEnableRpcLogging = enableRpcLogging;
     }
