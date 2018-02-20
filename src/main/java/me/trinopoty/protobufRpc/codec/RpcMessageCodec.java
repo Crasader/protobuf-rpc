@@ -19,10 +19,10 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
     private final int mMaxReceivePacketLength;
     private final boolean mDiscardLargerPacket;
 
+    private final Logger mLogger;
+    private final String mLoggingName;
     private final boolean mEnableEncodeLogging;
     private final boolean mEnableDecodeLogging;
-    private final String mLoggingName;
-    private final Logger mLogger;
 
     private int mDiscardLength = 0;
 

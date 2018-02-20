@@ -34,10 +34,12 @@ public final class ProtobufRpcClient {
 
         private Integer mMaxReceivePacketLength = null;
         private Long mDefaultReceiveTimeoutMillis = null;
-        private boolean mKeepAlive = false;
-        private boolean mEnableTrafficLogging = false;
-        private String mLoggingName = null;
         private SslContext mSslContext = null;
+        private boolean mKeepAlive = false;
+
+        private String mLoggingName = null;
+        private boolean mEnableRpcLogging = false;
+        private boolean mEnableTrafficLogging = false;
 
         private final RpcServiceCollector mRpcServiceCollector = new RpcServiceCollector();
 
@@ -74,6 +76,17 @@ public final class ProtobufRpcClient {
          */
         public Builder setKeepAlive(boolean keepAlive) {
             mKeepAlive = keepAlive;
+            return this;
+        }
+
+        /**
+         * Enable or disable RPC logging. If logging is enabled, a logging name must be provided.
+         *
+         * @param enableRpcLogging Value indicating whether traffic logging would be enabled or disabled.
+         * @return {@link ProtobufRpcClient.Builder} instance for chaining.
+         */
+        public Builder setEnableRpcLogging(boolean enableRpcLogging) {
+            mEnableRpcLogging = enableRpcLogging;
             return this;
         }
 
@@ -153,8 +166,11 @@ public final class ProtobufRpcClient {
          * @throws IllegalArgumentException On error.
          */
         public ProtobufRpcClient build() {
+            if(mEnableRpcLogging && (mLoggingName == null)) {
+                throw new IllegalArgumentException("Logging name must be provided if RPC logging is enabled.");
+            }
             if(mEnableTrafficLogging && (mLoggingName == null)) {
-                throw new IllegalArgumentException("Logging name must be provided if logging is enabled.");
+                throw new IllegalArgumentException("Logging name must be provided if traffic logging is enabled.");
             }
 
             ProtobufRpcClient protobufRpcClient = new ProtobufRpcClient(mRpcServiceCollector, mDefaultReceiveTimeoutMillis);
@@ -165,9 +181,11 @@ public final class ProtobufRpcClient {
             bootstrap.handler(new RpcClientChannelInitializer(
                     mMaxReceivePacketLength,
                     null,
-                    mEnableTrafficLogging,
+                    mKeepAlive,
                     mLoggingName,
-                    mKeepAlive));
+                    mEnableRpcLogging,
+                    mEnableTrafficLogging
+            ));
             protobufRpcClient.setBootstrap(bootstrap);
 
             if(mSslContext != null) {
@@ -177,9 +195,11 @@ public final class ProtobufRpcClient {
                 sslBootstrap.handler(new RpcClientChannelInitializer(
                         mMaxReceivePacketLength,
                         mSslContext,
-                        mEnableTrafficLogging,
+                        mKeepAlive,
                         mLoggingName,
-                        mKeepAlive));
+                        mEnableRpcLogging,
+                        mEnableTrafficLogging
+                ));
                 protobufRpcClient.setSslBootstrap(sslBootstrap);
             }
 

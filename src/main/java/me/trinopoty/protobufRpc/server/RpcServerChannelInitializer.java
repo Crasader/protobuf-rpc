@@ -35,7 +35,7 @@ final class RpcServerChannelInitializer extends ChannelInitializer<SocketChannel
     }
 
     @Override
-    protected void initChannel(SocketChannel socketChannel) throws Exception {
+    protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
 
         if(mSslContext != null) {

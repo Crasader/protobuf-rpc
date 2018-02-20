@@ -7,9 +7,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import me.trinopoty.protobufRpc.DisconnectReason;
+import me.trinopoty.protobufRpc.ProtobufRpcLog;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
 import me.trinopoty.protobufRpc.util.Pair;
 import me.trinopoty.protobufRpc.util.RpcServiceCollector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -19,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     private final ProtobufRpcServer mProtobufRpcServer;
+
+    private final Logger mLogger;
     private final String mLoggingName;
     private final boolean mEnableRpcLogging;
 
@@ -34,6 +39,8 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
             String loggingName,
             boolean enableRpcLogging) {
         mProtobufRpcServer = protobufRpcServer;
+
+        mLogger = LogManager.getLogger(ProtobufRpcLog.SERVER_RPC);
         mLoggingName = loggingName;
         mEnableRpcLogging = enableRpcLogging;
     }
@@ -152,6 +159,15 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                 throw ex;
             }
 
+            if(mEnableRpcLogging) {
+                mLogger.info(String.format("[ServerChannel:%s] {%d, %d, %d} Received RPC call request: %s",
+                        mLoggingName,
+                        requestWirePacket.getMessageIdentifier(),
+                        serviceIdentifier.getServiceIdentifier(),
+                        serviceIdentifier.getMethodIdentifier(),
+                        (requestMessage != null)? requestMessage.toString() : "null"));
+            }
+
             try {
                 if((requestMessage != null) && (methodInfo.getResponseMessageParser() != null)) {
                     responseMessage = (AbstractMessage) methodInfo.getMethod().invoke(implObject, requestMessage);
@@ -171,6 +187,15 @@ final class RpcServerChannelHandler extends ChannelInboundHandlerAdapter {
                 sendError(ctx, requestWirePacket, "Unable to process call.");
 
                 throw new RuntimeException(String.format("Response cannot be null from %s.%s", rpcServiceInfo.getImplClass().getName(), methodInfo.getMethod().getName()));
+            }
+
+            if(mEnableRpcLogging) {
+                mLogger.info(String.format("[ServerChannel:%s] {%d, %d, %d} Sending RPC call response: %s",
+                        mLoggingName,
+                        requestWirePacket.getMessageIdentifier(),
+                        serviceIdentifier.getServiceIdentifier(),
+                        serviceIdentifier.getMethodIdentifier(),
+                        (responseMessage != null)? responseMessage.toString() : "null"));
             }
 
             WirePacketFormat.WirePacket.Builder responseWirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();

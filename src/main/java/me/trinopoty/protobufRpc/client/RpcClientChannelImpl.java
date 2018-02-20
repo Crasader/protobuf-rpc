@@ -42,32 +42,54 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
             RpcServiceCollector.RpcMethodInfo methodInfo = mRpcServiceInfo.getMethodMap().get(method);
             assert methodInfo != null;
 
+            final long messageIdentifier = mMessageIdentifierGenerator.incrementAndGet();
+
             WirePacketFormat.ServiceIdentifier serviceIdentifier = WirePacketFormat.ServiceIdentifier.newBuilder()
                     .setServiceIdentifier(mRpcServiceInfo.getServiceIdentifier())
                     .setMethodIdentifier(methodInfo.getMethodIdentifier())
                     .build();
             WirePacketFormat.WirePacket.Builder requestWirePacketBuilder = WirePacketFormat.WirePacket.newBuilder();
-            requestWirePacketBuilder.setMessageIdentifier(mMessageIdentifierGenerator.incrementAndGet());
+            requestWirePacketBuilder.setMessageIdentifier(messageIdentifier);
             requestWirePacketBuilder.setMessageType(WirePacketFormat.MessageType.MESSAGE_TYPE_REQUEST);
             requestWirePacketBuilder.setServiceIdentifier(serviceIdentifier);
 
+            AbstractMessage requestMessage = null;
             if(methodInfo.getRequestMessageParser() != null) {
-                AbstractMessage requestMessage = (AbstractMessage) args[0];
+                requestMessage = (AbstractMessage) args[0];
                 requestWirePacketBuilder.setPayload(requestMessage.toByteString());
+            }
+
+            if(mRpcClientChannelHandler.mEnableRpcLogging) {
+                mRpcClientChannelHandler.mLogger.info(String.format("[ClientChannel:%s] {%d, %d, %d} Sending RPC request: ",
+                        mRpcClientChannelHandler.mLoggingName,
+                        messageIdentifier,
+                        serviceIdentifier.getServiceIdentifier(),
+                        serviceIdentifier.getMethodIdentifier()),
+                        (requestMessage != null)? requestMessage.toString() : "null");
             }
 
             WirePacketFormat.WirePacket responseWirePacketPacket = callRpcAndWaitForResponse(requestWirePacketBuilder.build());
             if(responseWirePacketPacket != null) {
                 if (responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_RESPONSE) {
+                    AbstractMessage responseMessage = null;
                     if(methodInfo.getResponseMessageParser() != null) {
                         try {
-                            return methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
+                            responseMessage = (AbstractMessage) methodInfo.getResponseMessageParser().invoke(null, (Object) responseWirePacketPacket.getPayload().toByteArray());
                         } catch (IllegalAccessException | InvocationTargetException ex) {
                             throw new RpcCallException("Unable to parse response message.", ex);
                         }
-                    } else {
-                        return null;
                     }
+
+                    if(mRpcClientChannelHandler.mEnableRpcLogging) {
+                        mRpcClientChannelHandler.mLogger.info(String.format("[ClientChannel:%s] {%d, %d, %d} Received RPC response: ",
+                                mRpcClientChannelHandler.mLoggingName,
+                                messageIdentifier,
+                                serviceIdentifier.getServiceIdentifier(),
+                                serviceIdentifier.getMethodIdentifier()),
+                                (requestMessage != null)? requestMessage.toString() : "null");
+                    }
+
+                    return responseMessage;
                 } else if (responseWirePacketPacket.getMessageType() == WirePacketFormat.MessageType.MESSAGE_TYPE_ERROR) {
                     WirePacketFormat.ErrorMessage errorMessage = WirePacketFormat.ErrorMessage.parseFrom(responseWirePacketPacket.getPayload());
                     throw new RpcCallServerException(errorMessage.getMessage());
@@ -83,6 +105,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
     private final ProtobufRpcClient mProtobufRpcClient;
     private final Channel mChannel;
     private final long mDefaultReceiveTimeoutMillis;
+    private final RpcClientChannelHandler mRpcClientChannelHandler;
 
     private final AtomicLong mMessageIdentifierGenerator = new AtomicLong();
     private final Map<Class, Object> mProxyMap = new HashMap<>();
@@ -102,8 +125,8 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
         mChannel = channel;
         mDefaultReceiveTimeoutMillis = (defaultReceiveTimeoutMillis != null)? defaultReceiveTimeoutMillis : DEFAULT_READ_TIMEOUT;
 
-        RpcClientChannelHandler rpcClientChannelHandler = (RpcClientChannelHandler) mChannel.pipeline().get("handler");
-        rpcClientChannelHandler.setRpcClientChannel(this);
+        mRpcClientChannelHandler = (RpcClientChannelHandler) mChannel.pipeline().get("handler");
+        mRpcClientChannelHandler.setRpcClientChannel(this);
 
         mChannel.closeFuture().addListener(this);
     }

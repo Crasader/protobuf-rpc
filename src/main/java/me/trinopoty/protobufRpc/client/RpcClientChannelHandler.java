@@ -4,13 +4,26 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import me.trinopoty.protobufRpc.ProtobufRpcLog;
 import me.trinopoty.protobufRpc.codec.WirePacketFormat;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
 final class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
 
+    final Logger mLogger;
+    final String mLoggingName;
+    final boolean mEnableRpcLogging;
+
     private RpcClientChannelImpl mRpcClientChannel;
+
+    RpcClientChannelHandler(String loggingName, boolean enableRpcLogging) {
+        mLogger = LogManager.getLogger(ProtobufRpcLog.CLIENT_RPC);
+        mLoggingName = loggingName;
+        mEnableRpcLogging = enableRpcLogging;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {

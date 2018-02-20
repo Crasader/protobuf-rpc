@@ -15,21 +15,26 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
 
     private final int mMaxReceivePacketLength;
     private final SslContext mSslContext;
-    private final boolean mEnableTrafficLogging;
-    private final String mLoggingName;
     private final boolean mKeepAlive;
+
+    private final String mLoggingName;
+    private final boolean mEnableRpcLogging;
+    private final boolean mEnableTrafficLogging;
 
     RpcClientChannelInitializer(
             Integer maxReceivePacketLength,
             SslContext sslContext,
-            boolean enableTrafficLogging,
+            boolean keepAlive,
             String loggingName,
-            boolean keepAlive) {
+            boolean enableRpcLogging,
+            boolean enableTrafficLogging) {
         mMaxReceivePacketLength = (maxReceivePacketLength != null)? maxReceivePacketLength : MAX_PACKET_LENGTH;
         mSslContext = sslContext;
-        mEnableTrafficLogging = enableTrafficLogging;
-        mLoggingName = loggingName;
         mKeepAlive = keepAlive;
+
+        mLoggingName = loggingName;
+        mEnableRpcLogging = enableRpcLogging;
+        mEnableTrafficLogging = enableTrafficLogging;
     }
 
     @Override
@@ -43,7 +48,8 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast("protobuf-codec", new RpcMessageCodec(
                 mMaxReceivePacketLength,
                 true,
-                mLoggingName, mEnableTrafficLogging,
+                mLoggingName,
+                mEnableTrafficLogging,
                 mEnableTrafficLogging
         ));
         if(mKeepAlive) {
@@ -54,6 +60,9 @@ final class RpcClientChannelInitializer extends ChannelInitializer<SocketChannel
                     0,
                     TimeUnit.MILLISECONDS));
         }
-        pipeline.addLast("handler", new RpcClientChannelHandler());
+        pipeline.addLast("handler", new RpcClientChannelHandler(
+                mLoggingName,
+                mEnableRpcLogging
+        ));
     }
 }
