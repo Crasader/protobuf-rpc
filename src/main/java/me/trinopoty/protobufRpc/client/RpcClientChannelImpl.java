@@ -60,12 +60,12 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
             }
 
             if(mRpcClientChannelHandler.mEnableRpcLogging) {
-                mRpcClientChannelHandler.mLogger.info(String.format("[ClientChannel:%s] {%d, %d, %d} Sending RPC request: ",
+                mRpcClientChannelHandler.mLogger.info(String.format("[ClientChannel:%s] {%d, %d, %d} Sending RPC request: %s",
                         mRpcClientChannelHandler.mLoggingName,
                         messageIdentifier,
                         serviceIdentifier.getServiceIdentifier(),
-                        serviceIdentifier.getMethodIdentifier()),
-                        (requestMessage != null)? requestMessage.toString() : "null");
+                        serviceIdentifier.getMethodIdentifier(),
+                        (requestMessage != null)? requestMessage.toString() : "null"));
             }
 
             WirePacketFormat.WirePacket responseWirePacketPacket = callRpcAndWaitForResponse(requestWirePacketBuilder.build());
@@ -81,12 +81,12 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
                     }
 
                     if(mRpcClientChannelHandler.mEnableRpcLogging) {
-                        mRpcClientChannelHandler.mLogger.info(String.format("[ClientChannel:%s] {%d, %d, %d} Received RPC response: ",
+                        mRpcClientChannelHandler.mLogger.info(String.format("[ClientChannel:%s] {%d, %d, %d} Received RPC response: %s",
                                 mRpcClientChannelHandler.mLoggingName,
                                 messageIdentifier,
                                 serviceIdentifier.getServiceIdentifier(),
-                                serviceIdentifier.getMethodIdentifier()),
-                                (requestMessage != null)? requestMessage.toString() : "null");
+                                serviceIdentifier.getMethodIdentifier(),
+                                (requestMessage != null)? requestMessage.toString() : "null"));
                     }
 
                     return responseMessage;

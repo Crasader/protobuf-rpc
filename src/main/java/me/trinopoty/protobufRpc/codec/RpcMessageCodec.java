@@ -99,9 +99,9 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
                 final int payloadLength = byteBuf.readInt();
 
-                if(mEnableDecodeLogging) {
+                /*if(mEnableDecodeLogging) {
                     mLogger.info(String.format("[RpcDecoder:%s] Received message { size: %s }", mLoggingName, payloadLength));
-                }
+                }*/
 
                 if(payloadLength > mMaxReceivePacketLength) {
                     if(mDiscardLargerPacket) {
