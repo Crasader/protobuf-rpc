@@ -1,20 +1,20 @@
 package me.trinopoty.protobufRpc.util;
 
-public final class Pair<K, V> {
+public final class Pair<T1, T2> {
 
-    private final K mFirst;
-    private final V mSecond;
+    private final T1 mFirst;
+    private final T2 mSecond;
 
-    public Pair(K first, V second) {
+    public Pair(T1 first, T2 second) {
         mFirst = first;
         mSecond = second;
     }
 
-    public K getFirst() {
+    public T1 getFirst() {
         return mFirst;
     }
 
-    public V getSecond() {
+    public T2 getSecond() {
         return mSecond;
     }
 }
