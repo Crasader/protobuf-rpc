@@ -228,7 +228,7 @@ final class RpcClientChannelImpl implements ProtobufRpcClientChannel, ChannelFut
             }
         }
 
-        return mRequestResponseMap.get(wirePacket.getMessageIdentifier());
+        return mRequestResponseMap.remove(wirePacket.getMessageIdentifier());
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
