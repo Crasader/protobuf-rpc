@@ -2,14 +2,14 @@ package me.trinopoty.protobufRpc.test;
 
 import io.netty.channel.Channel;
 import me.trinopoty.protobufRpc.DisconnectReason;
-import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannelDisconnectListener;
 import me.trinopoty.protobufRpc.annotation.RpcIdentifier;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
+import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannelDisconnectListener;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
-import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannelDisconnectListener;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannel;
+import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannelDisconnectListener;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 
 @SuppressWarnings({"JavaReflectionMemberAccess", "unchecked"})
@@ -31,6 +34,7 @@ public final class DisconnectTest {
         @RpcIdentifier(1)
         EchoOuterClass.Echo echo1(EchoOuterClass.Echo request);
 
+        @SuppressWarnings("unused")
         @RpcIdentifier(2)
         EchoOuterClass.Echo echo2(EchoOuterClass.Echo request);
     }
@@ -110,9 +114,9 @@ public final class DisconnectTest {
 
     @SuppressWarnings("Duplicates")
     @BeforeClass
-    public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+    public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException, UnknownHostException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
-        builder.setLocalPort(6000);
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 6000));
         builder.addServiceImplementation(EchoService.class, EchoServiceImpl.class);
         builder.registerOob(EchoOob.class);
         ProtobufRpcServer server = builder.build();
@@ -135,7 +139,7 @@ public final class DisconnectTest {
     @Test(expected = RpcCallException.class)
     public void suddenServerDisconnectTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
-        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel(sProtobufRpcServer.getActualLocalAddress());
 
         clientChannel.setChannelDisconnectListener(new ProtobufRpcClientChannelDisconnectListener() {
             @Override
@@ -163,7 +167,7 @@ public final class DisconnectTest {
     @Test
     public void suddenClientDisconnectTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         final ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).registerOob(EchoOob.class).build();
-        final ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        final ProtobufRpcClientChannel clientChannel = client.getClientChannel(sProtobufRpcServer.getActualLocalAddress());
 
         clientChannel.setChannelDisconnectListener(new ProtobufRpcClientChannelDisconnectListener() {
             @Override
@@ -178,8 +182,6 @@ public final class DisconnectTest {
                 System.out.println("[Client] EchoOob.echo1: " + request);
             }
         });
-
-        EchoService echoService = clientChannel.getService(EchoService.class);
 
         (new Thread() {
             @Override
@@ -209,9 +211,6 @@ public final class DisconnectTest {
                 }
             }
         }).start();
-
-        System.out.println("[Client] Sending echo");
-        echoService.echo2(EchoOuterClass.Echo.newBuilder().setMessage("Hello").build());
 
         try {
             Thread.sleep(1500);

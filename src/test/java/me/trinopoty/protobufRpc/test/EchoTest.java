@@ -11,6 +11,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -43,9 +47,9 @@ public final class EchoTest {
 
     @SuppressWarnings("Duplicates")
     @BeforeClass
-    public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+    public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException, UnknownHostException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
-        builder.setLocalPort(6000);
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0));
         builder.addServiceImplementation(EchoService.class, EchoServiceImpl.class);
         ProtobufRpcServer server = builder.build();
 
@@ -61,7 +65,7 @@ public final class EchoTest {
     @Test
     public void emptyTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
-        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel(sProtobufRpcServer.getActualLocalAddress());
         EchoService echoService = clientChannel.getService(EchoService.class);
 
         assertNotNull(echoService.empty(Empty.getDefaultInstance()));
@@ -73,7 +77,7 @@ public final class EchoTest {
     @Test
     public void echoTest() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).build();
-        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel(sProtobufRpcServer.getActualLocalAddress());
         EchoService echoService = clientChannel.getService(EchoService.class);
 
         EchoOuterClass.Echo echo = echoService.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello World").build());

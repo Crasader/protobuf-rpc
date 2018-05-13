@@ -11,6 +11,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
 import static org.junit.Assert.assertNotNull;
 
 public final class OobEchoTest {
@@ -48,9 +52,9 @@ public final class OobEchoTest {
 
     @SuppressWarnings("Duplicates")
     @BeforeClass
-    public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+    public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException, UnknownHostException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
-        builder.setLocalPort(6000);
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 6000));
         builder.addServiceImplementation(EchoService.class, EchoServiceImpl.class);
         builder.registerOob(OobService.class);
         ProtobufRpcServer server = builder.build();
@@ -67,7 +71,7 @@ public final class OobEchoTest {
     @Test
     public void oobEchoTest01() throws DuplicateRpcMethodIdentifierException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
         ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService.class).registerOob(OobService.class).build();
-        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel(sProtobufRpcServer.getActualLocalAddress());
         EchoService echoService = clientChannel.getService(EchoService.class);
 
         clientChannel.addOobHandler(OobService.class, new OobService() {

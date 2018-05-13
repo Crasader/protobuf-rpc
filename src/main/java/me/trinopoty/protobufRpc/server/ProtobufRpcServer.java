@@ -15,7 +15,6 @@ import me.trinopoty.protobufRpc.util.RpcServiceCollector;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -55,17 +54,6 @@ public final class ProtobufRpcServer {
         }
 
         /**
-         * Sets the local port to listen for non-SSL connections.
-         *
-         * @param port The port to listen for non-SSL connections.
-         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
-         */
-        public Builder setLocalPort(int port) {
-            mLocalAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
-            return this;
-        }
-
-        /**
          * Sets the local address to listen for non-SSL connections.
          *
          * @param localAddress The address to listen for non-SSL connections.
@@ -73,19 +61,6 @@ public final class ProtobufRpcServer {
          */
         public Builder setLocalAddress(InetSocketAddress localAddress) {
             mLocalAddress = localAddress;
-            return this;
-        }
-
-        /**
-         * Sets the local port to listen for SSL connections.
-         *
-         * @param port The port to listen for SSL connections.
-         * @param sslContext The SSL context to use for SSL connections.
-         * @return {@link ProtobufRpcServer.Builder} instance for chaining.
-         */
-        public Builder setSslLocalPort(int port, SslContext sslContext) {
-            mSslLocalAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
-            mSslContext = sslContext;
             return this;
         }
 
@@ -214,6 +189,10 @@ public final class ProtobufRpcServer {
 
             ProtobufRpcServer protobufRpcServer = new ProtobufRpcServer(mRpcServiceCollector);
 
+            if(mLocalAddress.equals(mSslLocalAddress)) {
+                throw new IllegalArgumentException("SSL and non-SSL address cannot be same.");
+            }
+
             if(mLocalAddress != null) {
                 ServerBootstrap serverBootstrap = new ServerBootstrap();
                 serverBootstrap.group(acquireServerEventLoopGroup(), acquireClientEventLoopGroup());
@@ -285,13 +264,15 @@ public final class ProtobufRpcServer {
 
     private final RpcServiceCollector mRpcServiceCollector;
 
-    private InetSocketAddress mLocalAddress;
-    private ServerBootstrap mServerBootstrap;
+    private InetSocketAddress mLocalAddress = null;
+    private ServerBootstrap mServerBootstrap = null;
     private Channel mServerChannel = null;
+    private InetSocketAddress mActualLocalAddress = null;
 
-    private InetSocketAddress mSslLocalAddress;
-    private ServerBootstrap mSslServerBootstrap;
+    private InetSocketAddress mSslLocalAddress = null;
+    private ServerBootstrap mSslServerBootstrap = null;
     private Channel mSslServerChannel = null;
+    private InetSocketAddress mActualSslLocalAddress = null;
 
     private boolean mServerStarted = false;
     private ProtobufRpcServerChannelDisconnectListener mChannelDisconnectListener = null;
@@ -348,24 +329,26 @@ public final class ProtobufRpcServer {
 
     /**
      * Bind to ports and start this server.
-     *
-     * @throws IllegalStateException If the server is already running.
+     * Do nothing if already running.
      */
+    @SuppressWarnings("Duplicates")
     public synchronized void startServer() {
         if(mServerStarted) {
-            throw new IllegalStateException("Server already running.");
+            return;
         }
 
         if(mLocalAddress != null) {
             ChannelFuture channelFuture = mServerBootstrap.bind(mLocalAddress).syncUninterruptibly();
             if(channelFuture.isSuccess()) {
                 mServerChannel = channelFuture.channel();
+                mActualLocalAddress = (InetSocketAddress) mServerChannel.localAddress();
             }
         }
         if(mSslLocalAddress != null) {
             ChannelFuture channelFuture = mSslServerBootstrap.bind(mSslLocalAddress).syncUninterruptibly();
             if(channelFuture.isSuccess()) {
                 mSslServerChannel = channelFuture.channel();
+                mActualSslLocalAddress = (InetSocketAddress) mSslServerChannel.localAddress();
             }
         }
 
@@ -375,15 +358,24 @@ public final class ProtobufRpcServer {
     /**
      * Stop this server and unbind from ports.
      */
+    @SuppressWarnings("Duplicates")
     public synchronized void stopServer() {
+        if(!mServerStarted) {
+            return;
+        }
+
         if(mServerChannel != null) {
             mServerChannel.close().syncUninterruptibly();
+            mServerChannel = null;
+            mActualLocalAddress = null;
 
             returnServerEventLoopGroup();
             returnClientEventLoopGroup();
         }
         if(mSslServerChannel != null) {
             mSslServerChannel.close().syncUninterruptibly();
+            mSslServerChannel = null;
+            mActualSslLocalAddress = null;
 
             returnServerEventLoopGroup();
             returnClientEventLoopGroup();
@@ -394,6 +386,34 @@ public final class ProtobufRpcServer {
 
     public void setChannelDisconnectListener(ProtobufRpcServerChannelDisconnectListener channelDisconnectListener) {
         mChannelDisconnectListener = channelDisconnectListener;
+    }
+
+    /**
+     * Get the actual local address of the server.
+     *
+     * @return Local address of the server.
+     * @throws IllegalStateException If server is not started.
+     */
+    @SuppressWarnings("unused")
+    public InetSocketAddress getActualLocalAddress() {
+        if(!mServerStarted) {
+            throw new IllegalArgumentException("Server not started.");
+        }
+        return mActualLocalAddress;
+    }
+
+    /**
+     * Get the actual local address of the SSL server.
+     *
+     * @return Local address of the SSL server.
+     * @throws IllegalStateException If server is not started.
+     */
+    @SuppressWarnings("unused")
+    public InetSocketAddress getActualSslLocalAddress() {
+        if(!mServerStarted) {
+            throw new IllegalArgumentException("Server not started.");
+        }
+        return mActualSslLocalAddress;
     }
 
     RpcServiceCollector getRpcServiceCollector() {

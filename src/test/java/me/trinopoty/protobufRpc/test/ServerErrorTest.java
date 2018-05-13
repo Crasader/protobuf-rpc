@@ -5,15 +5,19 @@ import me.trinopoty.protobufRpc.client.ProtobufRpcClient;
 import me.trinopoty.protobufRpc.client.ProtobufRpcClientChannel;
 import me.trinopoty.protobufRpc.exception.*;
 import me.trinopoty.protobufRpc.server.ProtobufRpcServer;
-import me.trinopoty.protobufRpc.server.ProtobufRpcServerChannel;
 import me.trinopoty.protobufRpc.test.proto.EchoOuterClass;
 import org.junit.Test;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 public final class ServerErrorTest {
 
     @RpcIdentifier(1)
     public interface EchoService01 {
 
+        @SuppressWarnings("unused")
         @RpcIdentifier(1)
         EchoOuterClass.Echo echo(EchoOuterClass.Echo request);
     }
@@ -22,13 +26,10 @@ public final class ServerErrorTest {
     public interface EchoService02 {
 
         @RpcIdentifier(1)
-        EchoOuterClass.Echo echo(EchoOuterClass.Echo request);
+        void echo(EchoOuterClass.Echo request);
     }
 
     public static final class EchoService01Impl implements EchoService01 {
-
-        public EchoService01Impl(ProtobufRpcServerChannel serverChannel) {
-        }
 
         @Override
         public EchoOuterClass.Echo echo(EchoOuterClass.Echo request) {
@@ -37,15 +38,17 @@ public final class ServerErrorTest {
     }
 
     @Test(expected = RpcCallServerException.class)
-    public void serverTest01() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException {
+    public void serverTest01() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException, UnknownHostException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
-        builder.setLocalPort(6000);
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 6000));
         builder.addServiceImplementation(EchoService01.class, EchoService01Impl.class);
         ProtobufRpcServer server = builder.build();
         server.startServer();
 
-        ProtobufRpcClient client = (new ProtobufRpcClient.Builder()).registerService(EchoService02.class).build();
-        ProtobufRpcClientChannel clientChannel = client.getClientChannel("127.0.0.1", 6000);
+        ProtobufRpcClient client = (new ProtobufRpcClient.Builder())
+                .registerService(EchoService02.class)
+                .build();
+        ProtobufRpcClientChannel clientChannel = client.getClientChannel(server.getActualLocalAddress());
 
         EchoService02 echoService02 = clientChannel.getService(EchoService02.class);
         echoService02.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello").build());
