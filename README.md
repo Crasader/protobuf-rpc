@@ -2,4 +2,4 @@
 
 [![](https://jitpack.io/v/trinopoty/protobuf-rpc.svg)](https://jitpack.io/#trinopoty/protobuf-rpc)
 
-Protobuf based Client-Server RPC library using java POJO.
+Protobuf and Netty based client-server RPC library.
