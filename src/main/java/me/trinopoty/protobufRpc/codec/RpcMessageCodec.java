@@ -99,7 +99,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                 mReadLengthRemaining -= bytesToRead;
                 mReadBufferPosition += bytesToRead;
 
-                byteBuf.discardReadBytes();
+                readerIdx = byteBuf.readerIndex();
 
                 if(mReadLengthRemaining == 0) {
                     try {
@@ -145,6 +145,8 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                     byteBuf.readBytes(mReadBuffer, 0, payloadLength);
                     return processPacket(mReadBuffer, payloadLength);
                 } else {
+                    readerIdx = byteBuf.readerIndex();
+
                     mReadLengthRemaining = payloadLength;
                     mReadBufferPosition = 0;
                     mIsReadingPacket = true;
