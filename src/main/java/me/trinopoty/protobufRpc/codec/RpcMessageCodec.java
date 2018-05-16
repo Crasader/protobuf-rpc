@@ -103,7 +103,7 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
                 if(mReadLengthRemaining == 0) {
                     try {
-                        return processPacket(mReadBuffer, mReadBufferPosition - 1);
+                        return processPacket(mReadBuffer, mReadBufferPosition);
                     } finally {
                         mIsReadingPacket = false;
                         mReadLengthRemaining = 0;
