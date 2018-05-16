@@ -76,85 +76,69 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
     }
 
     private WirePacketFormat.WirePacket decode(ByteBuf byteBuf) {
-        //noinspection UnusedAssignment
-        int readerIdx = byteBuf.readerIndex();
-
-        //noinspection ConstantConditions
-        do {
-            if(mDiscardLength > 0) {
-                if(mEnableDecodeLogging) {
-                    mLogger.info(String.format("[RpcDecoder:%s] Discarding data { size: %d }", mLoggingName, mDiscardLength));
-                }
-                mDiscardLength -= discardBytes(byteBuf, mDiscardLength);
+        if(mDiscardLength > 0) {
+            if(mEnableDecodeLogging) {
+                mLogger.info(String.format("[RpcDecoder:%s] Discarding data { size: %d }", mLoggingName, mDiscardLength));
             }
-            if(mDiscardLength > 0) {
-                return null;
-            }
+            mDiscardLength -= discardBytes(byteBuf, mDiscardLength);
+        }
+        if(mDiscardLength > 0) {
+            return null;
+        }
 
-            readerIdx = byteBuf.readerIndex();
+        if(mIsReadingPacket) {
+            final int bytesToRead = Math.min(byteBuf.readableBytes(), mReadLengthRemaining);
+            byteBuf.readBytes(mReadBuffer, mReadBufferPosition, bytesToRead);
+            mReadLengthRemaining -= bytesToRead;
+            mReadBufferPosition += bytesToRead;
 
-            if(mIsReadingPacket) {
-                final int bytesToRead = Math.min(byteBuf.readableBytes(), mReadLengthRemaining);
-                byteBuf.readBytes(mReadBuffer, mReadBufferPosition, bytesToRead);
-                mReadLengthRemaining -= bytesToRead;
-                mReadBufferPosition += bytesToRead;
-
-                readerIdx = byteBuf.readerIndex();
-
-                if(mReadLengthRemaining == 0) {
-                    try {
-                        return processPacket(mReadBuffer, mReadBufferPosition);
-                    } finally {
-                        mIsReadingPacket = false;
-                        mReadLengthRemaining = 0;
-                        mReadBufferPosition = 0;
-                    }
-                }
-
-                break;
-            }
-
-            boolean signatureFound = findPacketSignature(byteBuf);
-
-            if(signatureFound) {
-                byteBuf.discardReadBytes();
-                readerIdx = byteBuf.readerIndex();
-
-                signatureFound = (byteBuf.readableBytes() > 8);
-            }
-
-            if(signatureFound) {
-                byteBuf.readInt();  // Read the signature
-
-                final int payloadLength = byteBuf.readInt();
-
-                if(mEnableDecodeLogging) {
-                    mLogger.info(String.format("[RpcDecoder:%s] Received message { size: %s }", mLoggingName, payloadLength));
-                }
-
-                if(payloadLength > mMaxReceivePacketLength) {
-                    if(mDiscardLargerPacket) {
-                        mDiscardLength += payloadLength;
-                        mDiscardLength -= discardBytes(byteBuf, mDiscardLength);
-
-                        return null;
-                    } else {
-                        throw new TooLongFrameException("frame size (" + payloadLength + ") larger than maximum size (" + mMaxReceivePacketLength + ")");
-                    }
-                } else if(byteBuf.readableBytes() >= payloadLength) {
-                    byteBuf.readBytes(mReadBuffer, 0, payloadLength);
-                    return processPacket(mReadBuffer, payloadLength);
-                } else {
-                    readerIdx = byteBuf.readerIndex();
-
-                    mReadLengthRemaining = payloadLength;
+            if(mReadLengthRemaining == 0) {
+                try {
+                    return processPacket(mReadBuffer, mReadBufferPosition);
+                } finally {
+                    mIsReadingPacket = false;
+                    mReadLengthRemaining = 0;
                     mReadBufferPosition = 0;
-                    mIsReadingPacket = true;
                 }
             }
-        } while (false);
 
-        byteBuf.readerIndex(readerIdx);
+            return null;
+        }
+
+        boolean signatureFound = findPacketSignature(byteBuf);
+
+        if(signatureFound) {
+            signatureFound = (byteBuf.readableBytes() > 8);
+        }
+
+        if(signatureFound) {
+            byteBuf.readInt();  // Read the signature
+
+            final int payloadLength = byteBuf.readInt();
+
+            if(mEnableDecodeLogging) {
+                mLogger.info(String.format("[RpcDecoder:%s] Received message { size: %s }", mLoggingName, payloadLength));
+            }
+
+            if(payloadLength > mMaxReceivePacketLength) {
+                if(mDiscardLargerPacket) {
+                    mDiscardLength += payloadLength;
+                    mDiscardLength -= discardBytes(byteBuf, mDiscardLength);
+
+                    return null;
+                } else {
+                    throw new TooLongFrameException("frame size (" + payloadLength + ") larger than maximum size (" + mMaxReceivePacketLength + ")");
+                }
+            } else if(byteBuf.readableBytes() >= payloadLength) {
+                byteBuf.readBytes(mReadBuffer, 0, payloadLength);
+                return processPacket(mReadBuffer, payloadLength);
+            } else {
+                mReadLengthRemaining = payloadLength;
+                mReadBufferPosition = 0;
+                mIsReadingPacket = true;
+            }
+        }
+
         return null;
     }
 
