@@ -26,6 +26,11 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
     private int mDiscardLength = 0;
 
+    private boolean mIsReadingPacket = false;
+    private byte[] mReadBuffer;
+    private int mReadBufferPosition;
+    private int mReadLengthRemaining;
+
     public RpcMessageCodec(
             int maxReceivePacketLength,
             boolean discardLargerPacket,
@@ -38,6 +43,9 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
         mEnableEncodeLogging = enableEncodeLogging;
         mEnableDecodeLogging = enableDecodeLogging;
         mLoggingName = loggingName;
+
+        mReadBuffer = new byte[mMaxReceivePacketLength];
+        mReadBufferPosition = 0;
 
         mLogger = (mEnableDecodeLogging || mEnableEncodeLogging)? LogManager.getLogger(ProtobufRpcLog.CODEC) : null;
 
@@ -85,6 +93,49 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
 
             readerIdx = byteBuf.readerIndex();
 
+            if(mIsReadingPacket) {
+                final int bytesToRead = Math.min(byteBuf.readableBytes(), mReadLengthRemaining);
+                byteBuf.readBytes(mReadBuffer, mReadBufferPosition, bytesToRead);
+                mReadLengthRemaining -= bytesToRead;
+                mReadBufferPosition += bytesToRead;
+
+                byteBuf.discardReadBytes();
+
+                if(mReadLengthRemaining == 0) {
+                    try {
+                        WirePacketFormat.WirePacket wirePacket = WirePacketFormat.WirePacket.parseFrom(mReadBuffer);
+
+                        if(mEnableDecodeLogging) {
+                            logWireMessage(wirePacket);
+                        }
+
+                        if(wirePacket.hasPayload() && wirePacket.hasCrc32()) {
+                            final long crc32_provided = wirePacket.getCrc32() & 0x00000000ffffffffL;
+                            final long crc32_calculated = CRC32.calculateCrc32(wirePacket.getPayload());
+
+                            if(crc32_provided != crc32_calculated) {
+                                if(mEnableDecodeLogging) {
+                                    mLogger.error(String.format("[RpcDecoder:%s] Invalid payload crc32", mLoggingName));
+                                }
+                                return null;
+                            }
+                        }
+
+                        return wirePacket;
+                    } catch (InvalidProtocolBufferException ex) {
+                        if(mEnableDecodeLogging) {
+                            mLogger.error(String.format("[RpcDecoder:%s] Received invalid message", mLoggingName));
+                        }
+                    } finally {
+                        mIsReadingPacket = false;
+                        mReadLengthRemaining = 0;
+                        mReadBufferPosition = 0;
+                    }
+                }
+
+                break;
+            }
+
             boolean signatureFound = findPacketSignature(byteBuf);
 
             if(signatureFound) {
@@ -112,39 +163,10 @@ public final class RpcMessageCodec extends ByteToMessageCodec<WirePacketFormat.W
                     } else {
                         throw new TooLongFrameException("frame size (" + payloadLength + ") larger than maximum size (" + mMaxReceivePacketLength + ")");
                     }
-                }
-
-                if(byteBuf.readableBytes() >= payloadLength) {
-                    final byte[] payloadBuffer = new byte[payloadLength];
-                    byteBuf.readBytes(payloadBuffer);
-
-                    byteBuf.discardReadBytes();
-
-                    try {
-                        WirePacketFormat.WirePacket wirePacket = WirePacketFormat.WirePacket.parseFrom(payloadBuffer);
-
-                        if(mEnableDecodeLogging) {
-                            logWireMessage(wirePacket);
-                        }
-
-                        if(wirePacket.hasPayload() && wirePacket.hasCrc32()) {
-                            final long crc32_provided = wirePacket.getCrc32() & 0x00000000ffffffffL;
-                            final long crc32_calculated = CRC32.calculateCrc32(wirePacket.getPayload());
-
-                            if(crc32_provided != crc32_calculated) {
-                                if(mEnableDecodeLogging) {
-                                    mLogger.error(String.format("[RpcDecoder:%s] Invalid payload crc32", mLoggingName));
-                                }
-                                return null;
-                            }
-                        }
-
-                        return wirePacket;
-                    } catch (InvalidProtocolBufferException ex) {
-                        if(mEnableDecodeLogging) {
-                            mLogger.error(String.format("[RpcDecoder:%s] Received invalid message", mLoggingName));
-                        }
-                    }
+                } else {
+                    mReadLengthRemaining = payloadLength;
+                    mReadBufferPosition = 0;
+                    mIsReadingPacket = true;
                 }
             }
         } while (false);
