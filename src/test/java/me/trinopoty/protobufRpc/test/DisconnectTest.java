@@ -116,7 +116,7 @@ public final class DisconnectTest {
     @BeforeClass
     public static void setup() throws DuplicateRpcMethodIdentifierException, ServiceConstructorNotFoundException, MissingRpcIdentifierException, DuplicateRpcServiceIdentifierException, IllegalMethodSignatureException, UnknownHostException {
         ProtobufRpcServer.Builder builder = new ProtobufRpcServer.Builder();
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 6000));
+        builder.setLocalAddress(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0));
         builder.addServiceImplementation(EchoService.class, EchoServiceImpl.class);
         builder.registerOob(EchoOob.class);
         ProtobufRpcServer server = builder.build();
